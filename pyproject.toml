@@ -9,9 +9,10 @@ packages = [{include = "rbf_clan_bot"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 python-telegram-bot = "^20.7"
-sqlalchemy = "^2.0.25"
+sqlalchemy = {extras = ["asyncio"], version = "^2.0.25"}
 alembic = "^1.13.1"
 python-decouple = "^3.8"
+asyncpg = "^0.29.0"
 
 
 [tool.poetry.group.dev.dependencies]
