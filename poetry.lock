@@ -634,6 +634,17 @@ plugins = ["importlib-metadata"]
 windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
+name = "python-decouple"
+version = "3.8"
+description = "Strict separation of settings from code."
+optional = false
+python-versions = "*"
+files = [
+    {file = "python-decouple-3.8.tar.gz", hash = "sha256:ba6e2657d4f376ecc46f77a3a615e058d93ba5e465c01bbe57289bfb7cce680f"},
+    {file = "python_decouple-3.8-py3-none-any.whl", hash = "sha256:d0d45340815b25f4de59c974b855bb38d03151d81b037d9e3f463b0c9f8cbd66"},
+]
+
+[[package]]
 name = "python-telegram-bot"
 version = "20.7"
 description = "We have made you a wrapper you can't refuse"
@@ -862,4 +873,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "a8eb3610464260b90497e27b45b794eca0522667c8fb7d61265456341778c1d6"
+content-hash = "a28f12c8a7947974ef6e48ec2a8fe07e6858038ef6e6c3499968c7d772c029d8"

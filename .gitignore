@@ -3,3 +3,4 @@ __pycache__/
 __mypy_cache/
 .vscode/
 .git/
+.env
