@@ -10,14 +10,14 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 
-class Applications(Base):
+class Application(Base):
     """Applications model."""
 
     __tablename__ = "applications"
 
     id = Column(Integer, primary_key=True)
     user_id = Column(BigInteger, ForeignKey("users.id"))
-    status_id = Column(Integer, ForeignKey("application_statuses.id"))
+    status_id = Column(Integer, ForeignKey("application_statuses.id"), default=1)
     created_at = Column(TIMESTAMP, server_default=func.now())
     updated_at = Column(TIMESTAMP, onupdate=func.now())
     submission_at = Column(TIMESTAMP)
@@ -27,4 +27,4 @@ class Applications(Base):
 
     user = relationship("User", back_populates="applications")
     status = relationship("ApplicationStatus", back_populates="applications")
-    answers = relationship("ApplicationAnswers", back_populates="application")
+    answers = relationship("ApplicationAnswer", back_populates="application")

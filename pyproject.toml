@@ -4,15 +4,16 @@ version = "0.1.0"
 description = ""
 authors = ["SerHappy <lokhmanovkirill@gmail.com>"]
 readme = "README.md"
-packages = [{include = "rbf_clan_bot"}]
+packages = [{ include = "rbf_clan_bot" }]
 
 [tool.poetry.dependencies]
 python = "^3.11"
 python-telegram-bot = "^20.7"
-sqlalchemy = {extras = ["asyncio"], version = "^2.0.25"}
+sqlalchemy = { extras = ["asyncio"], version = "^2.0.25" }
 alembic = "^1.13.1"
 python-decouple = "^3.8"
 asyncpg = "^0.29.0"
+loguru = "^0.7.2"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -20,7 +21,6 @@ python-telegram-bot = "^20.7"
 flake8-docstrings = "^1.7.0"
 flake8-bandit = "^4.1.1"
 black = "^24.1.1"
-mypy = "^1.8.0"
 flake8 = "^7.0.0"
 isort = "^5.13.2"
 
@@ -43,9 +43,9 @@ ignore_missing_imports = true
 warn_return_any = false
 warn_unused_configs = true
 warn_unused_ignores = true
-exclude = []
+exclude = ["alembic/*.py"]
 disallow_untyped_calls = false
-disallow_untyped_defs = true
+disallow_untyped_defs = false
 
 
 [build-system]

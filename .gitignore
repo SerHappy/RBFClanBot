@@ -5,3 +5,4 @@ __mypy_cache/
 .git/
 .env
 versions/
+*.txt

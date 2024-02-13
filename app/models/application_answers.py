@@ -6,14 +6,14 @@ from sqlalchemy import TEXT
 from sqlalchemy.orm import relationship
 
 
-class ApplicationAnswers(Base):
+class ApplicationAnswer(Base):
     """ApplicationAnswers model."""
 
     __tablename__ = "application_answers"
 
     answer_id = Column(Integer, primary_key=True)
     application_id = Column(Integer, ForeignKey("applications.id"))
-    question_number = Column(Integer)
+    question_number = Column(Integer, nullable=False)
     answer_text = Column(TEXT)
 
     application = relationship("Application", back_populates="answers")

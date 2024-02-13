@@ -8,7 +8,7 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
 
-class Users(Base):
+class User(Base):
     """Users model."""
 
     __tablename__ = "users"
@@ -20,4 +20,4 @@ class Users(Base):
     is_admin = Column(Boolean, default=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
 
-    applications = relationship("Applications", back_populates="user")
+    applications = relationship("Application", back_populates="user", order_by="Application.decision_date")

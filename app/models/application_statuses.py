@@ -13,4 +13,4 @@ class ApplicationStatus(Base):
     id = Column(Integer, primary_key=True)
     status = Column(String(266))
 
-    applications = relationship("Applications", back_populates="status")
+    applications = relationship("Application", back_populates="status")
