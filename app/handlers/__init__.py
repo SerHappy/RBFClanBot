@@ -1,11 +1,11 @@
+from config import ApplicationStates
 from handlers.application import about
 from handlers.application import activity
-from handlers.application import change_or_accept
 from handlers.application import game_mode
 from handlers.application import old
 from handlers.application import pubg_id
+from handlers.application import user_decision
 from handlers.start import start_command
-from config import ApplicationStates
 from telegram.ext import Application
 from telegram.ext import CommandHandler
 from telegram.ext import ConversationHandler
@@ -23,7 +23,7 @@ def add_all_handlers(application: Application):
             ApplicationStates.game_modes_state: [MessageHandler(filters.ALL, game_mode)],
             ApplicationStates.activity_state: [MessageHandler(filters.ALL, activity)],
             ApplicationStates.about_state: [MessageHandler(filters.ALL, about)],
-            ApplicationStates.change_or_accept_state: [MessageHandler(filters.ALL, change_or_accept)],
+            ApplicationStates.change_or_accept_state: [MessageHandler(filters.ALL, user_decision)],
         },
         fallbacks=[],
     )

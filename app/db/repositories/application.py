@@ -1,7 +1,9 @@
 from .abstract import Repository
 from models import Application
 from sqlalchemy import select
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
+from venv import logger
 
 
 class ApplicationRepository(Repository[Application]):
@@ -34,6 +36,7 @@ class ApplicationRepository(Repository[Application]):
         Returns:
             Application.
         """
+        logger.debug(f"Creating new application for user_id={user_id}")
         await self.session.merge(
             self.type_model(
                 user_id=user_id,
@@ -54,8 +57,18 @@ class ApplicationRepository(Repository[Application]):
         Returns:
             Application or None.
         """
+        logger.debug(f"Getting last application for user_id={user_id}")
         statement = (
-            select(Application).where(Application.user_id == user_id).order_by(Application.decision_date).limit(1)
+            select(Application)
+            .where(Application.user_id == user_id)
+            .order_by(Application.decision_date.desc())
+            .limit(1)
         )
         res = (await self.session.execute(statement)).scalar()
         return res
+
+    async def change_status(self, application_id: int, status_id: int) -> None:
+        """Change application status."""
+        logger.debug(f"Changing application status for application_id={application_id} to status_id={status_id}")
+        statement = update(Application).where(Application.id == application_id).values(status_id=status_id)
+        await self.session.execute(statement)

@@ -2,6 +2,7 @@ from .abstract import Repository
 from collections.abc import Sequence
 from loguru import logger
 from models import ApplicationAnswer
+from sqlalchemy import delete
 from sqlalchemy import select
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -56,6 +57,7 @@ class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
         Returns:
             str or None.
         """
+        logger.debug(f"Getting answer for application_id={application_id} and question_number={question_number}")
         statement = (
             select(ApplicationAnswer)
             .where(ApplicationAnswer.application_id == application_id)
@@ -78,7 +80,12 @@ class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
         Returns:
             Sequence of ApplicationAnswer.
         """
-        statement = select(ApplicationAnswer).where(ApplicationAnswer.application_id == application_id)
+        logger.debug(f"Getting all answers for application_id={application_id}")
+        statement = (
+            select(ApplicationAnswer)
+            .where(ApplicationAnswer.application_id == application_id)
+            .order_by(ApplicationAnswer.question_number)
+        )
         res = (await self.session.execute(statement)).scalars().all()
         return res
 
@@ -90,6 +97,9 @@ class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
             question_number: Question number.
             answer_text: Answer text.
         """
+        logger.debug(
+            f"Updating question answer={answer_text} for application_id={application_id} and question_number={question_number}"
+        )
         statement = (
             update(ApplicationAnswer)
             .where(ApplicationAnswer.application_id == application_id)
@@ -98,3 +108,13 @@ class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
         )
         await self.session.execute(statement)
         return None
+
+    async def delete_all_answers_by_application_id(self, application_id: int) -> None:
+        """Delete all answers by application id.
+
+        Args:
+            application_id: Application id.
+        """
+        logger.debug(f"Deleting all answers for application_id={application_id}")
+        statement = delete(ApplicationAnswer).where(ApplicationAnswer.application_id == application_id)
+        await self.session.execute(statement)

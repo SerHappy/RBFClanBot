@@ -15,85 +15,16 @@ from telegram.ext import ConversationHandler
 import keyboards
 
 
-async def _is_new_answer(user, question_number) -> bool:
-    async with Session() as session:
-        db = Database(session)
-        user_application = await db.application.get_last_application(user.id)
-        logger.debug(f"User {user} last application: {user_application}")
-        user_answer = await db.application_answer.get_answer_by_question_number(user_application.id, question_number)
-        logger.debug(f"User {user} answer for question ({question_number}): {user_answer}")
-        return user_answer is None
-
-
-async def _save_answer(user, question_number, answer) -> None:
-    async with Session() as session:
-        db = Database(session)
-        user_application = await db.application.get_last_application(user.id)
-        logger.debug(f"User {user} last application: {user_application}")
-        logger.debug(f"User {user} answer for question {question_number} added to {answer}")
-        await db.application_answer.create(user_application.id, question_number, answer)
-        await session.commit()
-
-
-async def _update_answer(user, question_number, answer) -> None:
-    async with Session() as session:
-        db = Database(session)
-        user_application = await db.application.get_last_application(user.id)
-        logger.debug(f"User {user} last application: {user_application}")
-        logger.debug(f"User {user} answer for question {question_number} updated to {answer}")
-        await db.application_answer.update_question_answer(user_application.id, question_number, answer)
-        await session.commit()
-
-
-async def _ask_next_question(chat, next_message, keyboard) -> None:
-    await chat.send_message(
-        text=next_message,
-        reply_markup=keyboard,
-    )
-
-
-async def process_application_answer(
-    user: User,
-    chat: Chat,
-    message: Message,
-    question_number: int,
-    next_message: str,
-    keyboard: ReplyKeyboardMarkup | ReplyKeyboardRemove | InlineKeyboardMarkup,
-    next_state: ApplicationStates,
-) -> int:
-    """
-    Process application answer.
-
-    Args:
-        user: User.
-        chat: Chat.
-        message: Message.
-        question_number: Question number.
-        next_message: Next message.
-        keyboard: Keyboard.
-        next_state: Next state.
-
-    Returns:
-        Next state.
-    """
-    logger.debug(f"User {user} answer for question {question_number}: {message.text}")
-    if await _is_new_answer(user, question_number) is False:
-        await _update_answer(user, question_number, message.text)
-        return await _show_overview(chat)
-    await _save_answer(user, question_number, message.text)
-    await _ask_next_question(chat, next_message, keyboard)
-    return next_state
-
-
 async def pubg_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Pubg ID handler."""
+    logger.debug("Starting handle pubg_id answer")
     user = update.effective_user
     chat = update.effective_chat
     message = update.message
     if user is None or chat is None or message is None:
-        logger.warning("Invalid user or chat or message or user_data")
+        logger.critical("Invalid user or chat or message or user_data")
         return ConversationHandler.END
-    return await process_application_answer(
+    return await _process_application_answer(
         user=user,
         chat=chat,
         message=message,
@@ -106,13 +37,14 @@ async def pubg_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def old(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Old handler."""
+    logger.debug("Starting handle old answer")
     user = update.effective_user
     chat = update.effective_chat
     message = update.message
     if user is None or chat is None or message is None:
-        logger.warning("Invalid user or chat or message or user_data")
+        logger.critical("Invalid user or chat or message or user_data")
         return ConversationHandler.END
-    return await process_application_answer(
+    return await _process_application_answer(
         user=user,
         chat=chat,
         message=message,
@@ -125,13 +57,14 @@ async def old(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def game_mode(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Game mode handler."""
+    logger.debug("Starting handle game_mode answer")
     user = update.effective_user
     chat = update.effective_chat
     message = update.message
     if user is None or chat is None or message is None:
-        logger.warning("Invalid user or chat or message or user_data")
+        logger.critical("Invalid user or chat or message or user_data")
         return ConversationHandler.END
-    return await process_application_answer(
+    return await _process_application_answer(
         user=user,
         chat=chat,
         message=message,
@@ -144,18 +77,20 @@ async def game_mode(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def activity(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Activity handler."""
+    logger.debug("Starting handle activity answer")
     user = update.effective_user
     chat = update.effective_chat
     message = update.message
     if user is None or chat is None or message is None:
-        logger.warning("Invalid user or chat or message or user_data")
+        logger.critical("Invalid user or chat or message or user_data")
         return ConversationHandler.END
-    return await process_application_answer(
+    return await _process_application_answer(
         user=user,
         chat=chat,
         message=message,
         question_number=4,
-        next_message="Расскажи о себе либо пропусти вопрос. Чем больше информации мы о тебе получим, тем выше вероятность одобрения заявки.",
+        next_message="Расскажи о себе, либо пропусти вопрос.\n"
+        + "Чем больше информации мы о тебе получим, тем выше вероятность одобрения заявки.",
         keyboard=keyboards.USER_SKIP_KEYBOARD,
         next_state=ApplicationStates.about_state,
     )
@@ -163,22 +98,32 @@ async def activity(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
 async def about(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """About handler."""
+    logger.debug("Starting handle about answer")
     user = update.effective_user
     chat = update.effective_chat
     message = update.message
     if user is None or chat is None or message is None:
-        logger.warning("Invalid user or chat or message or user_data")
+        logger.critical("Invalid user or chat or message or user_data")
         return ConversationHandler.END
+    answer = message.text
+    if answer == "Пропустить":
+        answer = "Пусто"
     if await _is_new_answer(user, 5) is False:
-        await _update_answer(user, 5, message.text)
+        await _update_answer(user, 5, answer)
     else:
-        await _save_answer(user, 5, message.text)
+        await _save_answer(user, 5, answer)
     return await _show_overview(chat)
 
 
 async def _show_overview(chat) -> ApplicationStates.change_or_accept_state:
+    logger.debug(f"Showing overview for chat={chat.id}")
+    async with Session() as session:
+        db = Database(session)
+        application = await db.application.get_last_application(user_id=chat.id)
+        answers = await db.application_answer.get_all_answers_by_application_id(application.id)
+        print(answers)
     await chat.send_message(
-        "Твоя заявка:\n1. pubgID\n2. возраст\n3. режимы игры\n4. Частота активности\n5. о себе\nВсе верно?",
+        f"Твоя заявка:\n\n1. PUBG ID: {answers[0].answer_text}\n2. Возраст: {answers[1].answer_text}\n3. Режимы игры: {answers[2].answer_text}\n4. Активность: {answers[3].answer_text}\n5. О себе: {answers[4].answer_text}\nВсе верно?",
         reply_markup=keyboards.REMOVE_KEYBOARD,
     )
     await chat.send_message(
@@ -188,20 +133,21 @@ async def _show_overview(chat) -> ApplicationStates.change_or_accept_state:
     return ApplicationStates.change_or_accept_state
 
 
-async def change_or_accept(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Change or accept handler."""
+async def user_decision(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """1-6 answer for application. If 1-5 - ask this question again, if 6 - accept application."""
+    logger.debug("Starting handle user_decision answer")
     user = update.effective_user
     chat = update.effective_chat
     if user is None or chat is None or update.message is None or context.user_data is None:
-        logger.warning("Invalid user or chat or message or user_data")
+        logger.critical("Invalid user or chat or message or user_data")
         return ConversationHandler.END
     logger.debug(f"User {user} answer for change_or_accept: {update.message.text}")
-    # TODO: store change_or_accept in db
     answer = update.message.text
-    return await _choose_action(answer, chat, context)
+    return await _choose_action(answer, user, chat, context)
 
 
-async def _choose_action(answer: str | None, chat: Chat, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def _choose_action(answer: str | None, user: User, chat: Chat, context: ContextTypes.DEFAULT_TYPE) -> int:
+    logger.debug(f"Choosing action for user {user} answer: {answer}")
     if answer == "1":
         await _ask_next_question(
             chat,
@@ -234,11 +180,99 @@ async def _choose_action(answer: str | None, chat: Chat, context: ContextTypes.D
         await _ask_next_question(
             chat,
             "Расскажи о себе либо пропусти вопрос. Чем больше информации мы о тебе получим, тем выше вероятность одобрения заявки.",
-            keyboards.REMOVE_KEYBOARD,
+            keyboards.USER_SKIP_KEYBOARD,
         )
         return ApplicationStates.about_state
+    if answer == "6":
+        await _change_application_status_to_waiting(user)
+        await chat.send_message(
+            "Заявка принята!",
+            reply_markup=keyboards.REMOVE_KEYBOARD,
+        )
+        return ConversationHandler.END
+    await chat.send_message("Неверная команда")
+    return ApplicationStates.change_or_accept_state
+
+
+async def _process_application_answer(
+    user: User,
+    chat: Chat,
+    message: Message,
+    question_number: int,
+    next_message: str,
+    keyboard: ReplyKeyboardMarkup | ReplyKeyboardRemove | InlineKeyboardMarkup,
+    next_state: ApplicationStates,
+) -> int:
+    """
+    Process application answer.
+
+    Args:
+        user: User.
+        chat: Chat.
+        message: Message.
+        question_number: Question number.
+        next_message: Next message.
+        keyboard: Keyboard.
+        next_state: Next state.
+
+    Returns:
+        Next state.
+    """
+    logger.debug(f"User {user} answer for question {question_number}: {message.text}")
+    if await _is_new_answer(user, question_number) is False:
+        await _update_answer(user, question_number, message.text)
+        return await _show_overview(chat)
+    await _save_answer(user, question_number, message.text)
+    await _ask_next_question(chat, next_message, keyboard)
+    return next_state
+
+
+async def _change_application_status_to_waiting(user: User):
+    logger.debug(f"Changing application status to waiting for user {user}")
+    async with Session() as session:
+        db = Database(session)
+        user_application = await db.application.get_last_application(user.id)
+        logger.debug(f"User {user} last application: {user_application}")
+        await db.application.change_status(user_application.id, 2)
+        await session.commit()
+
+
+async def _is_new_answer(user, question_number) -> bool:
+    logger.debug(f"Checking if user {user} has new answer for question {question_number}")
+    async with Session() as session:
+        db = Database(session)
+        user_application = await db.application.get_last_application(user.id)
+        logger.debug(f"User {user} last application: {user_application}")
+        user_answer = await db.application_answer.get_answer_by_question_number(user_application.id, question_number)
+        logger.debug(f"User {user} answer for question ({question_number}): {user_answer}")
+        return user_answer is None
+
+
+async def _save_answer(user, question_number, answer) -> None:
+    logger.debug(f"Saving answer for user {user} for question {question_number} with answer {answer}")
+    async with Session() as session:
+        db = Database(session)
+        user_application = await db.application.get_last_application(user.id)
+        logger.debug(f"User {user} last application: {user_application}")
+        logger.debug(f"User {user} answer for question {question_number} added to {answer}")
+        await db.application_answer.create(user_application.id, question_number, answer)
+        await session.commit()
+
+
+async def _update_answer(user, question_number, answer) -> None:
+    logger.debug(f"Updating answer for user {user} for question {question_number} with answer {answer}")
+    async with Session() as session:
+        db = Database(session)
+        user_application = await db.application.get_last_application(user.id)
+        logger.debug(f"User {user} last application: {user_application}")
+        logger.debug(f"User {user} answer for question {question_number} updated to {answer}")
+        await db.application_answer.update_question_answer(user_application.id, question_number, answer)
+        await session.commit()
+
+
+async def _ask_next_question(chat, next_message, keyboard) -> None:
+    logger.debug(f"Asking next question: {next_message}")
     await chat.send_message(
-        "Заявка принята!",
-        reply_markup=keyboards.REMOVE_KEYBOARD,
+        text=next_message,
+        reply_markup=keyboard,
     )
-    return ConversationHandler.END
