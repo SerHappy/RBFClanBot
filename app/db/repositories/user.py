@@ -32,6 +32,10 @@ class UserRepository(Repository[User]):
         Returns:
             User.
         """
+        if username is None:
+            username = f"[ID{id}](tg://user?id={id})"
+        else:
+            username = f"@{username}"
         new_user = await self.session.merge(
             self.type_model(
                 id=id,
@@ -42,6 +46,30 @@ class UserRepository(Repository[User]):
             )
         )
         return new_user
+
+    async def create_if_not_exists(
+        self,
+        id: int,
+        username: str | None = None,
+        first_name: str | None = None,
+        last_name: str | None = None,
+        is_admin: bool = False,
+    ) -> User:
+        """Create new user if not exists.
+
+        Args:
+            username: Username (Optional).
+            first_name: First name (Optional).
+            last_name: Last name (Optional).
+            is_admin: Is admin. Default: False.
+
+        Returns:
+            User.
+        """
+        user = await self.get(id)
+        if user is None:
+            user = await self.create(id, username, first_name, last_name, is_admin)
+        return user
 
     async def get_last_application(self, user_id: int) -> Application | None:
         """Get last user application.

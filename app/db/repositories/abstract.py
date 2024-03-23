@@ -16,10 +16,10 @@ AbstractModel = TypeVar("AbstractModel")
 class Repository(Generic[AbstractModel]):
     """Abstract repository."""
 
-    type_model: Type[Base]  # type: ignore
+    type_model: Type[Base]
     session: AsyncSession
 
-    def __init__(self, type_model: Type[Base], session: AsyncSession) -> None:  # type: ignore
+    def __init__(self, type_model: Type[Base], session: AsyncSession) -> None:
         """Initialize repository.
 
         Args:

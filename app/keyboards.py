@@ -6,14 +6,24 @@ from telegram import ReplyKeyboardMarkup
 from telegram import ReplyKeyboardRemove
 
 
-ADMIN_DECISION_KEYBOARD = InlineKeyboardMarkup(
-    [
+def ADMIN_DECISION_KEYBOARD(application_id: int) -> InlineKeyboardMarkup:
+    """Создание клавиатуры для администраторов."""
+    return InlineKeyboardMarkup(
         [
-            InlineKeyboardButton("Принять", callback_data=Callbacks.APPLICATION_ACCEPT.value),
-            InlineKeyboardButton("Отклонить", callback_data=Callbacks.APPLICATION_DECLINE.value),
-        ],
-    ]
-)
+            [
+                InlineKeyboardButton(
+                    "Принять",
+                    callback_data=Callbacks.APPLICATION_ACCEPT.value.format(application_id=application_id),
+                ),
+                InlineKeyboardButton(
+                    "Отклонить",
+                    callback_data=Callbacks.APPLICATION_DECLINE.value.format(application_id=application_id),
+                ),
+            ],
+        ]
+    )
+
+
 ADMIN_DECLINE_BACK_KEYBOARD = InlineKeyboardMarkup(
     [[InlineKeyboardButton("Назад", callback_data=Callbacks.APPLICATION_DECLINE_BACK.value)]]
 )
@@ -42,3 +52,5 @@ USER_DECISION_KEYBOARD = ReplyKeyboardMarkup(
 )
 
 REMOVE_KEYBOARD = ReplyKeyboardRemove()
+
+REMOVE_INLINE_KEYBOARD = InlineKeyboardMarkup([])

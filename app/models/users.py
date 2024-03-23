@@ -14,10 +14,15 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(BigInteger, primary_key=True, autoincrement=False)
-    username = Column(String(32))
+    username = Column(String(255))
     first_name = Column(String(64))
     last_name = Column(String(64))
     is_admin = Column(Boolean, default=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
 
-    applications = relationship("Application", back_populates="user", order_by="Application.decision_date")
+    applications = relationship(
+        "Application",
+        back_populates="user",
+        order_by="Application.decision_date",
+        cascade="all, delete",
+    )

@@ -43,7 +43,7 @@ ignore_missing_imports = true
 warn_return_any = false
 warn_unused_configs = true
 warn_unused_ignores = true
-exclude = ["alembic/*.py"]
+exclude = 'alembic/'
 disallow_untyped_calls = false
 disallow_untyped_defs = false
 

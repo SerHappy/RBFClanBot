@@ -11,9 +11,9 @@ class ApplicationAnswer(Base):
 
     __tablename__ = "application_answers"
 
-    answer_id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True)
     application_id = Column(Integer, ForeignKey("applications.id"))
-    question_number = Column(Integer, nullable=False)
+    question_number = Column(Integer)
     answer_text = Column(TEXT)
 
-    application = relationship("Application", back_populates="answers")
+    application = relationship("Application", back_populates="answers", cascade="all, delete")

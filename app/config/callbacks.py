@@ -4,6 +4,6 @@ from enum import Enum
 class Callbacks(Enum):
     """Callbacks for bot."""
 
-    APPLICATION_ACCEPT = "application_accept"
-    APPLICATION_DECLINE = "application_decline"
-    APPLICATION_DECLINE_BACK = "application_decline_back"
+    APPLICATION_ACCEPT = "application_accept:{application_id}"
+    APPLICATION_DECLINE = "application_decline:{application_id}"
+    APPLICATION_DECLINE_BACK = "back_application_decline"

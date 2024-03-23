@@ -1,9 +1,10 @@
 from .abstract import Repository
+from datetime import datetime
+from loguru import logger
 from models import Application
 from sqlalchemy import select
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
-from venv import logger
 
 
 class ApplicationRepository(Repository[Application]):
@@ -48,7 +49,8 @@ class ApplicationRepository(Repository[Application]):
             )
         )
 
-    async def get_last_application(self, user_id: int) -> Application | None:
+    # TODO: Change to get active application, because it's more clear
+    async def _get_last_application(self, user_id: int) -> Application | None:
         """Get last user application.
 
         Args:
@@ -67,8 +69,46 @@ class ApplicationRepository(Repository[Application]):
         res = (await self.session.execute(statement)).scalar()
         return res
 
+    async def create_if_not_exists(self, user_id: int) -> Application:
+        """
+        Получить или создать заявку пользователя с заданным user_id.
+
+        Args:
+            user_id: ID пользователя.
+
+        Returns:
+            Заявка пользователя Application.
+        """
+        application = await self._get_last_application(user_id)
+        if application is None:
+            await self.create(user_id)
+            application = await self._get_last_application(user_id)
+        return application
+
     async def change_status(self, application_id: int, status_id: int) -> None:
         """Change application status."""
         logger.debug(f"Changing application status for application_id={application_id} to status_id={status_id}")
         statement = update(Application).where(Application.id == application_id).values(status_id=status_id)
+        await self.session.execute(statement)
+
+    async def approve_application(self, application_id: int, invite_link: str) -> None:
+        """Approve application."""
+        logger.debug(f"Approving application for application_id={application_id}")
+        await self.change_status(application_id, 3)
+        statement = (
+            update(Application)
+            .where(Application.id == application_id)
+            .values(decision_date=datetime.now(), invite_link=invite_link)
+        )
+        await self.session.execute(statement)
+
+    async def reject_application(self, application_id: int, rejection_reason: str) -> None:
+        """Reject application."""
+        logger.debug(f"Rejecting application for application_id={application_id}")
+        await self.change_status(application_id, 4)
+        statement = (
+            update(Application)
+            .where(Application.id == application_id)
+            .values(decision_date=datetime.now(), rejection_reason=rejection_reason)
+        )
         await self.session.execute(statement)

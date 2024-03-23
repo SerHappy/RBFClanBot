@@ -1,5 +1,6 @@
 from db.repositories import ApplicationAnswerRepository
 from db.repositories import ApplicationRepository
+from db.repositories import ApplicationStatusRepository
 from db.repositories import UserRepository
 from decouple import config
 from sqlalchemy.ext.asyncio import async_sessionmaker
@@ -27,3 +28,4 @@ class Database:
         self.user = UserRepository(session)
         self.application = ApplicationRepository(session)
         self.application_answer = ApplicationAnswerRepository(session)
+        self.application_status = ApplicationStatusRepository(session)

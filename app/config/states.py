@@ -10,3 +10,9 @@ class ApplicationStates(Enum):
     activity_state = 4
     about_state = 5
     change_or_accept_state = 6
+
+
+class DeclineUserStates(Enum):
+    """Decline user states."""
+
+    decline_reason_state = 1
