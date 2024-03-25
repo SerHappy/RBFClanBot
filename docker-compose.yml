@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  # db:
+  #   image: postgres:13
+  #   environment:
+  #     POSTGRES_USER: postgres
+  #     POSTGRES_PASSWORD: postgres
+  #     POSTGRES_DB: rbf_bot
+  #   ports:
+  #     - "5433:5432"
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+
+  app:
+    build: .
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@10.0.0.2:5432/rbf_bot
+    # depends_on:
+    #   - db
+    volumes:
+      - ./app/logs:/app/app/logs
+
+# volumes:
+#   postgres_data:

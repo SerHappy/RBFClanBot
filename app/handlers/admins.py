@@ -162,7 +162,6 @@ async def _generate_invite_link(bot: Bot) -> str:
         Ссылка на приглашение.
     """
     logger.debug("In generate invite link handler.")
-    chat_id = config("ADMIN_CHAT_ID", cast=int)
+    chat_id = config("CLAN_CHAT_ID", cast=int)
     link: ChatInviteLink = await bot.create_chat_invite_link(chat_id, member_limit=1)
-    return "Тут будет ссылка"
-    # return link.invite_link
+    return link.invite_link

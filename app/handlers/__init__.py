@@ -27,7 +27,6 @@ def add_all_handlers(application: Application):
     _add_conversation_handler(application)
     _add_admins_handler(application)
     application.add_handler(MessageHandler(filters.ALL, unknown_handler))
-    # application.add_handler(CommandHandler(filters.ALL, decline_back_handler))
 
 
 def _add_conversation_handler(application: Application):
