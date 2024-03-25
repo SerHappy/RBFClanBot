@@ -9,10 +9,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
-    """ApplicationAnswer repository."""
+    """Репозиторий для работы с ответами на заявки."""
 
     def __init__(self, session: AsyncSession) -> None:
-        """Initialize ApplicationAnswer repository."""
+        """Инициализация репозитория."""
         super().__init__(type_model=ApplicationAnswer, session=session)
 
     async def create(
@@ -21,84 +21,96 @@ class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
         question_number: int,
         answer_text: str | None = None,
     ) -> ApplicationAnswer:
-        """Create new application answer.
+        """Создание ответа на заявку.
 
         Args:
-            application_id: Application id.
-            question_number: Question number.
-            answer_text: Answer text (Optional).
+            application_id: ID заявки.
+            question_number: Номер вопроса.
+            answer_text: Текст ответа (Optional).
 
         Returns:
-            ApplicationAnswer.
+            Экземпляр ApplicationAnswer (созданный).
         """
         logger.debug(
-            f"Creating application answer for application_id={application_id}, question_number={question_number} and answer_text={answer_text}"
+            f"Создание ответа на заявку для application_id={application_id} и question_number={question_number} с текстом text={answer_text}"
         )
-        new_answer = await self.session.merge(
+        answer = await self.session.merge(
             self.type_model(
                 application_id=application_id,
                 question_number=question_number,
                 answer_text=answer_text,
             )
         )
-        return new_answer
+        logger.debug(f"Создан ответ на заявку для application_id={application_id} и question_number={question_number}")
+        return answer
 
-    async def get_answer_by_question_number(
+    async def get_application_answer_text_by_question_number(
         self,
         application_id: int,
         question_number: int,
     ) -> str | None:
-        """Get answer by question number.
+        """
+        Получение текста ответа по номеру вопроса у заданной заявки.
 
         Args:
-            application_id: Application id.
-            question_number: Question number.
+            application_id: ID заявки.
+            question_number: Номер вопроса.
 
         Returns:
-            str or None.
+            Текст ответа или None.
         """
-        logger.debug(f"Getting answer for application_id={application_id} and question_number={question_number}")
+        logger.debug(f"Получение текста ответа для application_id={application_id} и question_number={question_number}")
         statement = (
             select(ApplicationAnswer)
             .where(ApplicationAnswer.application_id == application_id)
             .where(ApplicationAnswer.question_number == question_number)
         )
-        res = (await self.session.execute(statement)).scalar()
-        if res is None:
+
+        answer = (await self.session.execute(statement)).scalar()
+        if answer is None:
+            logger.debug(f"Не найден ответ для application_id={application_id} и question_number={question_number}")
             return None
-        return res.answer_text
+        logger.debug(
+            f"Найден ответ для application_id={application_id} и question_number={question_number}, возвращаем текст"
+        )
+        return answer.answer_text
 
     async def get_all_answers_by_application_id(
         self,
         application_id: int,
     ) -> Sequence[ApplicationAnswer]:
-        """Get all answers by application id.
+        """Получение всех ответов заявки.
 
         Args:
-            application_id: Application id.
+            application_id: ID заявки.
 
         Returns:
-            Sequence of ApplicationAnswer.
+            Список экземпляров ApplicationAnswer.
         """
-        logger.debug(f"Getting all answers for application_id={application_id}")
+        logger.debug(f"Получение всех ответов для application_id={application_id}")
         statement = (
             select(ApplicationAnswer)
             .where(ApplicationAnswer.application_id == application_id)
             .order_by(ApplicationAnswer.question_number)
         )
-        res = (await self.session.execute(statement)).scalars().all()
-        return res
+        answers = (await self.session.execute(statement)).scalars().all()
+
+        logger.debug(f"Получены все ответы для application_id={application_id}")
+        return answers
 
     async def update_question_answer(self, application_id: int, question_number: int, answer_text: str) -> None:
-        """Update question answer.
+        """Обновление ответа на вопрос.
 
         Args:
-            application_id: Application id.
-            question_number: Question number.
-            answer_text: Answer text.
+            application_id: ID заявки.
+            question_number: Номер вопроса.
+            answer_text: Новый текст ответа.
+
+        Returns:
+            None
         """
         logger.debug(
-            f"Updating question answer={answer_text} for application_id={application_id} and question_number={question_number}"
+            f"Обновление ответа на вопрос для application_id={application_id} и question_number={question_number}"
         )
         statement = (
             update(ApplicationAnswer)
@@ -107,14 +119,21 @@ class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
             .values(answer_text=answer_text)
         )
         await self.session.execute(statement)
+        logger.debug(
+            f"Обновлен ответ на вопрос для application_id={application_id} и question_number={question_number}. Новый текст: {answer_text}"
+        )
         return None
 
     async def delete_all_answers_by_application_id(self, application_id: int) -> None:
-        """Delete all answers by application id.
+        """Удаление всех ответов для заявки.
 
         Args:
-            application_id: Application id.
+            application_id: ID заявки.
+
+        Returns:
+            None
         """
-        logger.debug(f"Deleting all answers for application_id={application_id}")
+        logger.debug(f"Удаление всех ответов для application_id={application_id}")
         statement = delete(ApplicationAnswer).where(ApplicationAnswer.application_id == application_id)
         await self.session.execute(statement)
+        logger.debug(f"Удалены все ответы для application_id={application_id}")

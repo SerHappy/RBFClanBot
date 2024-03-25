@@ -1,6 +1,5 @@
 from .base import Base
 from sqlalchemy import BigInteger
-from sqlalchemy import Boolean
 from sqlalchemy import Column
 from sqlalchemy import String
 from sqlalchemy import TIMESTAMP
@@ -9,7 +8,18 @@ from sqlalchemy.sql import func
 
 
 class User(Base):
-    """Users model."""
+    """
+    Модель пользователей.
+
+    Название таблицы: users
+
+    Поля:
+    - id (BigInteger): идентификатор. Равен telegram_id, Первичный ключ
+    - username (String(255)): имя пользователя
+    - first_name (String(64)): имя
+    - last_name (String(64)): фамилия
+    - created_at (TIMESTAMP): дата создания записи
+    """
 
     __tablename__ = "users"
 
@@ -17,7 +27,6 @@ class User(Base):
     username = Column(String(255))
     first_name = Column(String(64))
     last_name = Column(String(64))
-    is_admin = Column(Boolean, default=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
 
     applications = relationship(

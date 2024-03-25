@@ -9,21 +9,31 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.ext.asyncio import create_async_engine
 
 
-def create_db_engine() -> AsyncEngine:
-    """Create database engine."""
-    return create_async_engine(config("DATABASE_URL"), echo=True)
+def _create_db_engine() -> AsyncEngine:
+    """
+    Создание подключения к базе данных.
+
+    Args:
+        None
+
+    Returns:
+        AsyncEngine: Подключение к базе данных.
+    """
+    return create_async_engine(config("DATABASE_URL"), echo=config("ECHO_DB", cast=bool, default=False))
 
 
-Session = async_sessionmaker(create_db_engine())
+Session: async_sessionmaker = async_sessionmaker(_create_db_engine())
 
 
 class Database:
-    """Base class to manipulate database."""
+    """
+    Класс для работы с базой данных.
 
-    user: UserRepository
+    Хранит репозитории для работы с пользователями, заявками, ответами, статусами заявок.
+    """
 
     def __init__(self, session: AsyncSession) -> None:
-        """Initialize database."""
+        """Инициализация репозиториев."""
         self._session = session
         self.user = UserRepository(session)
         self.application = ApplicationRepository(session)

@@ -1,22 +1,60 @@
 from decouple import config
 from loguru import logger
+from pathlib import Path
+from telegram.ext import Application
 from telegram.ext import ApplicationBuilder
 
 import handlers
+import os
+import uvloop
 
 
 def main() -> None:
-    """
-    Энтрипоинт для запуска бота.
+    """Энтрипоинт приложения."""
+    _loguru_setup()
+    _install_uvloop()
+    _start_bot()
 
-    Запускает бота с помощью long-polling в event loop.
-    """
-    application = ApplicationBuilder().token(config("BOT_TOKEN", cast=str)).build()
+
+def _loguru_setup() -> None:
+    """Настройка логгера."""
+    logger.remove()
+    current_file_path = Path(__file__).resolve()
+    app_directory = current_file_path.parent
+    logs_directory = app_directory / "logs"
+    os.makedirs(logs_directory, exist_ok=True)
+    full_log_path = logs_directory / "full_log.log"
+    warnings_log_path = logs_directory / "warnings_and_above.log"
+    logger.add(
+        sink=full_log_path,
+        level="DEBUG",
+    )
+    logger.add(
+        sink=warnings_log_path,
+        level="WARNING",
+    )
+    logger.info("Настройка логгера прошла успешно.")
+
+
+def _install_uvloop() -> None:
+    """Установка uvloop как event loop по умолчанию."""
+    uvloop.install()
+    logger.debug("Установка uvloop прошла успешно.")
+
+
+async def post_init(application: Application):
+    """Установка команд для бота."""
+    await application.bot.set_my_commands([("start", "Подать заявку")])
+
+
+def _start_bot() -> None:
+    """Запуск бота."""
+    application: Application = ApplicationBuilder().token(config("BOT_TOKEN", cast=str)).post_init(post_init).build()
     logger.debug("Создание приложения прошло успешно.")
     handlers.add_all_handlers(application)
     logger.debug("Добавление обработчиков прошло успешно.")
     logger.info("Бот запущен")
-    application.run_polling()
+    application.run_polling(drop_pending_updates=True)
 
 
 if __name__ == "__main__":

@@ -9,12 +9,22 @@ import keyboards
 
 
 async def send_application_to_admins(bot: Bot, user_id: int) -> None:
-    """Send application to admins."""
+    """
+    Отправка заявки админам.
+
+    Args:
+        bot: Телеграм бот.
+        user_id: ID пользователя.
+
+    Returns:
+        None
+    """
     admin_chat = config("ADMIN_CHAT_ID", cast=int)
-    logger.debug(f"Отправка заявки пользователя<id={user_id}> админам в чат <id={admin_chat}>.")
+    logger.info(f"Отправка заявки пользователя user_id={user_id} админам в чат admin_chat_id={admin_chat}.")
     async with Session() as session:
+        logger.debug("Подключение к базе данных прошло успешно")
         db = Database(session)
-        application = await db.application._get_last_application(user_id)
+        application = await db.application.get_active_application(user_id)
         application_id = application.id
         message = await application_format.format_application(application_id, session)
         await session.commit()

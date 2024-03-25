@@ -6,9 +6,10 @@ from handlers.admins import decline_back_handler
 from handlers.admins import decline_reason_hander
 from handlers.admins import decline_user
 from handlers.application import about
+from handlers.application import about_skip
 from handlers.application import activity
+from handlers.application import age
 from handlers.application import game_mode
-from handlers.application import old
 from handlers.application import pubg_id
 from handlers.application import start_command
 from handlers.application import user_decision
@@ -35,11 +36,11 @@ def _add_conversation_handler(application: Application):
         entry_points=[CommandHandler("start", start_command)],
         states={
             ApplicationStates.pubgID_state: [MessageHandler(filters.TEXT, pubg_id)],
-            ApplicationStates.old_state: [MessageHandler(filters.TEXT, old)],
+            ApplicationStates.age_state: [MessageHandler(filters.TEXT, age)],
             ApplicationStates.game_modes_state: [MessageHandler(filters.TEXT, game_mode)],
             ApplicationStates.activity_state: [MessageHandler(filters.TEXT, activity)],
             ApplicationStates.about_state: [
-                MessageHandler(filters.Text(["Пропустить"]), about),
+                MessageHandler(filters.Text(["Пропустить"]), about_skip),
                 MessageHandler(filters.TEXT, about),
             ],
             ApplicationStates.change_or_accept_state: [MessageHandler(filters.TEXT, user_decision)],
@@ -56,6 +57,7 @@ def _add_admins_handler(application: Application):
         CallbackQueryHandler(accept_user, pattern=f"^{Callbacks.APPLICATION_ACCEPT.value.split(':')[0]}")
     )
     conv_hander = ConversationHandler(
+        per_user=False,
         entry_points=[
             CallbackQueryHandler(decline_user, pattern=f"^{Callbacks.APPLICATION_DECLINE.value.split(':')[0]}"),
         ],

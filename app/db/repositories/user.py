@@ -1,16 +1,14 @@
 from .abstract import Repository
-from models import Application
+from loguru import logger
 from models import User
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 
 class UserRepository(Repository[User]):
-    """User repository."""
+    """Репозиторий для работы с пользователями."""
 
     def __init__(self, session: AsyncSession) -> None:
-        """Initialize User repository."""
+        """Инициализация репозитория."""
         super().__init__(type_model=User, session=session)
 
     async def create(
@@ -19,33 +17,29 @@ class UserRepository(Repository[User]):
         username: str | None = None,
         first_name: str | None = None,
         last_name: str | None = None,
-        is_admin: bool = False,
     ) -> User:
-        """Create new user.
+        """Создание пользователя.
 
         Args:
-            username: Username (Optional).
-            first_name: First name (Optional).
-            last_name: Last name (Optional).
-            is_admin: Is admin. Default: False.
+            id: идентификатор пользователя.
+            username: никнейм пользователя (Optional).
+            first_name: Имя (Optional).
+            last_name: Фамилия (Optional).
 
         Returns:
-            User.
+            Экземпляр User (созданный).
         """
-        if username is None:
-            username = f"[ID{id}](tg://user?id={id})"
-        else:
-            username = f"@{username}"
-        new_user = await self.session.merge(
+        logger.debug(f"Создание пользователя с id={id}")
+        user = await self.session.merge(
             self.type_model(
                 id=id,
                 username=username,
                 first_name=first_name,
                 last_name=last_name,
-                is_admin=is_admin,
             )
         )
-        return new_user
+        logger.debug(f"Создан пользователь с id={id}")
+        return user
 
     async def create_if_not_exists(
         self,
@@ -53,33 +47,21 @@ class UserRepository(Repository[User]):
         username: str | None = None,
         first_name: str | None = None,
         last_name: str | None = None,
-        is_admin: bool = False,
     ) -> User:
-        """Create new user if not exists.
+        """Создание пользователя в случае его отсутствия.
 
         Args:
-            username: Username (Optional).
-            first_name: First name (Optional).
-            last_name: Last name (Optional).
-            is_admin: Is admin. Default: False.
+            id: идентификатор пользователя.
+            username: никнейм пользователя (Optional).
+            first_name: Имя (Optional).
+            last_name: Фамилия (Optional).
 
         Returns:
-            User.
+            Экземпляр User (найденный или созданный).
         """
+        logger.debug(f"Создание или получение пользователя с id={id}")
         user = await self.get(id)
         if user is None:
-            user = await self.create(id, username, first_name, last_name, is_admin)
+            logger.debug(f"Пользователь с id={id} не существует, создаем")
+            user = await self.create(id, username, first_name, last_name)
         return user
-
-    async def get_last_application(self, user_id: int) -> Application | None:
-        """Get last user application.
-
-        Args:
-            user_id: User id.
-
-        Returns:
-            Application.
-        """
-        statement = select(User).where(User.id == user_id).options(selectinload(User.applications))
-        res = (await self.session.execute(statement)).scalar()
-        return res

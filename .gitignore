@@ -6,3 +6,4 @@ __mypy_cache/
 .env
 versions/
 *.txt
+logs/

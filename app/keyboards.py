@@ -7,7 +7,15 @@ from telegram import ReplyKeyboardRemove
 
 
 def ADMIN_DECISION_KEYBOARD(application_id: int) -> InlineKeyboardMarkup:
-    """Создание клавиатуры для администраторов."""
+    """
+    Создание клавиатуры для администраторов.
+
+    Args:
+        application_id (int): Идентификатор заявки.
+
+    Returns:
+        InlineKeyboardMarkup: Клавиатура с кнопками "Принять" и "Отклонить", в callback_data передается application_id.
+    """
     return InlineKeyboardMarkup(
         [
             [
