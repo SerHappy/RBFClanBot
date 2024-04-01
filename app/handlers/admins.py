@@ -1,8 +1,8 @@
 from config import DeclineUserStates
+from datetime import timedelta
 from db import Database
 from db import Session
 from decouple import config
-from handlers.application import handle_admin_decision
 from loguru import logger
 from telegram import Bot
 from telegram import ChatInviteLink
@@ -11,7 +11,7 @@ from telegram import Update
 from telegram.ext import CallbackContext
 from telegram.ext import ContextTypes
 from telegram.ext import ConversationHandler
-from utils import application_format
+from services import formatting_service
 
 import keyboards
 
@@ -43,7 +43,7 @@ async def accept_user(update: Update, context: CallbackContext) -> None:
         db: Database = Database(session)
         link = await _generate_invite_link(context.application.bot)
         await db.application.approve_application(application_id, link)
-        new_text = await application_format.format_application(application_id, session)
+        new_text = await formatting_service.format_application(application_id, session)
         await session.commit()
     await callback.edit_message_reply_markup(keyboards.REMOVE_INLINE_KEYBOARD)
     await callback.edit_message_text(new_text, parse_mode="MarkdownV2")
@@ -113,7 +113,7 @@ async def decline_reason_hander(update: Update, context: ContextTypes.DEFAULT_TY
         logger.debug("Подключение к базе данных прошло успешно")
         db: Database = Database(session)
         await db.application.reject_application(application_id, rejection_reason.text)
-        new_text = await application_format.format_application(application_id, session)
+        new_text = await formatting_service.format_application(application_id, session)
         await session.commit()
     bot = context.application.bot
     message: Message = context.user_data["message"]  # type: ignore
@@ -149,6 +149,47 @@ async def decline_back_handler(update: Update, context: ContextTypes.DEFAULT_TYP
     logger.debug("Возврат к выбору действий для Заявки №{}".format(application_id))
     await callback.edit_message_reply_markup(keyboards.ADMIN_DECISION_KEYBOARD(application_id))
     return ConversationHandler.END
+
+
+async def handle_admin_decision(application_id: int, bot: Bot) -> None:
+    """
+    Обработка решения админа.
+
+    Args:
+        application_id: ID заявки.
+        bot: Телеграм бот.
+
+    Returns:
+        None
+    """
+    logger.info(f"Обработка решения админа application_id={application_id}")
+    async with Session() as session:
+        logger.debug("Подключение к базе данных прошло успешно")
+        db = Database(session)
+        application = await db.application.get(application_id)
+        application_status = application.status_id
+        if application_status == 3:
+            logger.debug(f"Заявка application_id={application_id} принята, уведомляем пользователя и отправляем инвайт")
+            await bot.send_message(
+                chat_id=application.user_id,
+                text="Ваша заявка принята!\nВаша персональная ссылка: {}".format(application.invite_link),
+            )
+        elif application_status == 4:
+            logger.debug(
+                f"Заявка application_id={application_id} отклонена, уведомляем пользователя и отправляем причину отказа"
+            )
+            await bot.send_message(
+                chat_id=application.user_id,
+                text="Ваша заявка отклонена.\nПричина отказа: {}.\nПопробуйте снова {} (UTC+0).".format(
+                    application.rejection_reason,
+                    (timedelta(days=30) + application.decision_date).strftime("%d.%m.%Y %H:%M"),
+                ),
+            )
+        await bot.send_message(
+            chat_id=application.user_id,
+            text="Если у вас есть какие-то вопросы или предложения по улучшению, напишите @RBFManager",
+        )
+        await session.commit()
 
 
 async def _generate_invite_link(bot: Bot) -> str:

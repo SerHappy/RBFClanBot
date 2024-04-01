@@ -14,7 +14,7 @@ def check_application_update(
 
     def decorator(update_func: Callable):
         @wraps(update_func)
-        def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
+        async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
             logger.debug(
                 f"Выполняется проверка правильности входящих сообщений при заполнении анкеты для обработчика {update_func.__name__}."
             )
@@ -32,12 +32,14 @@ def check_application_update(
                     f"Получен некорректный user или chat или message при попытке вызова обработчика {update_func.__name__}. Данная ошибка не должна никогда происходить!"
                 )
                 return ConversationHandler.END
-            logger.debug("Проверка правильности входящих сообщений прошла успешно.")
+            logger.debug(
+                f"Проверка правильности входящих сообщений для обработчика прошла {update_func.__name__} успешно."
+            )
             if return_full_user:
-                logger.debug("Вызываем обработчик с полным user.")
-                return update_func(user=user, chat=chat, message=message, context=context)
-            logger.debug("Вызываем обработчик с user_id.")
-            return update_func(user_id=user.id, chat=chat, message=message, context=context)
+                logger.debug(f"Вызываем обработчик {update_func.__name__} с полным user.")
+                return await update_func(user=user, chat=chat, message=message, context=context)
+            logger.debug(f"Вызываем обработчик {update_func.__name__} с user_id.")
+            return await update_func(user_id=user.id, chat=chat, message=message, context=context)
 
         return wrapper
 

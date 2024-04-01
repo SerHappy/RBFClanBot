@@ -4,25 +4,6 @@ from loguru import logger
 from models import Application
 
 
-def _escape_markdown(text: str) -> str:
-    """
-    Экранирует специальные символы для MarkdownV2.
-
-    Args:
-        text: Текст для экранирования.
-
-    Return:
-        Текст с экранированными специальными символами.
-    """
-    logger.debug(f"Экранирование символов в тексте text={text} для MarkdownV2")
-    escape_chars = "_*[]()~`>#+-=|{}.!"
-    escaped_text = "".join(f"\\{char}" if char in escape_chars else char for char in text)
-    logger.debug(
-        f"Экранирование символов в тексте text={text} для MarkdownV2 прошло успешно, новый text={escaped_text}"
-    )
-    return escaped_text
-
-
 async def format_application(application_id: Application, session: Session) -> str:
     """
     Возвращает текстовое представление заявки для админов.
@@ -59,3 +40,22 @@ async def format_application(application_id: Application, session: Session) -> s
     )
 
     return message
+
+
+def _escape_markdown(text: str) -> str:
+    """
+    Экранирует специальные символы для MarkdownV2.
+
+    Args:
+        text: Текст для экранирования.
+
+    Return:
+        Текст с экранированными специальными символами.
+    """
+    logger.debug(f"Экранирование символов в тексте text={text} для MarkdownV2")
+    escape_chars = "_*[]()~`>#+-=|{}.!"
+    escaped_text = "".join(f"\\{char}" if char in escape_chars else char for char in text)
+    logger.debug(
+        f"Экранирование символов в тексте text={text} для MarkdownV2 прошло успешно, новый text={escaped_text}"
+    )
+    return escaped_text

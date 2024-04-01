@@ -2,8 +2,8 @@ from db import Database
 from db import Session
 from decouple import config
 from loguru import logger
+from services import formatting_service
 from telegram import Bot
-from utils import application_format
 
 import keyboards
 
@@ -26,7 +26,7 @@ async def send_application_to_admins(bot: Bot, user_id: int) -> None:
         db = Database(session)
         application = await db.application.get_active_application(user_id)
         application_id = application.id
-        message = await application_format.format_application(application_id, session)
+        message = await formatting_service.format_application(application_id, session)
         await session.commit()
     await bot.send_message(
         text=message,
