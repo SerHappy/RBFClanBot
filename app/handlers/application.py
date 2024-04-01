@@ -3,6 +3,7 @@ from datetime import datetime
 from datetime import timedelta
 from db import Database
 from db import Session
+from decorators import updates
 from loguru import logger
 from models.applications import Application
 from services import sender
@@ -13,7 +14,6 @@ from telegram import InlineKeyboardMarkup
 from telegram import Message
 from telegram import ReplyKeyboardMarkup
 from telegram import ReplyKeyboardRemove
-from telegram import Update
 from telegram import User
 from telegram.ext import ContextTypes
 from telegram.ext import ConversationHandler
@@ -24,8 +24,11 @@ import keyboards
 # TODO: ПЕРЕПИСАТЬ ЭТО, ИСПОЛЬЗУЯ НЕСКОЛЬКО ФАЙЛОВ, ОТДЕЛЬНЫЙ МОДУЛЬ
 
 
+@updates.check_application_update(return_error_state=ConversationHandler.END, return_full_user=True)
 async def start_command(
-    update: Update,
+    user: User,
+    chat: Chat,
+    message: Message,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> ApplicationStates.pubgID_state:
     """
@@ -40,18 +43,7 @@ async def start_command(
     Returns:
         Переводит в состояние ApplicationStates.pubgID_state.
     """
-    if update.edited_message:
-        return
-    user = update.effective_user
-    chat = update.effective_chat
-
-    # TODO: Вынести это в middleware
-    if user is None or chat is None:
-        logger.critical(
-            "Пользователь или чат не определены при вызове команды /start! Данная ошибка не должна никогда происходить."
-        )
-        return ConversationHandler.END
-
+    # TODO: Вынести в декоратор
     chat_type = chat.type
     if chat_type != constants.ChatType.PRIVATE:
         await chat.send_message("Эту команду можно вызывать только в личной беседе с ботом.")
@@ -65,6 +57,7 @@ async def start_command(
         application_repo = db.application
 
         db_user = await user_repo.create_if_not_exists(user.id, user.username, user.first_name, user.last_name)
+        # TODO: Сохранять только статус
         application = await application_repo.create_if_not_exists(db_user.id)
 
         result = await handle_application_logic(application, chat, session)
@@ -183,7 +176,8 @@ def _is_correct_pubg_id(pubg_id: str | None) -> bool:
     return all(character in "0123456789" for character in pubg_id)
 
 
-async def pubg_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+@updates.check_application_update()
+async def pubg_id(user_id: int, chat: Chat, message: Message, context: ContextTypes.DEFAULT_TYPE) -> int:
     """
     Обработка ответа состояния ApplicationStates.pubgID_state.
 
@@ -195,27 +189,13 @@ async def pubg_id(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         Это же состояние, если проверка корректности pubg_id не пройдена, иначе следующее состояние.
 
     """
-    if update.edited_message:
-        return ApplicationStates.pubgID_state
-    user = update.effective_user
-    chat = update.effective_chat
-    print(update, user, chat, sep="\n")
-    message = update.message
-    if user is None or chat is None or message is None:
-        logger.critical(
-            "Получен некорректный user или chat или message в обработчике pubg_id! Данная ошибка не должна никогда происходить."
-        )
-        return ConversationHandler.END
-
-    logger.info(f"Пользователь chat_id={chat.id} ответил на вопрос pubg_id: {message.text}")
-
     if not _is_correct_pubg_id(message.text):
         logger.debug(f"Получен некорректный pubg_id={message.text} в чате chat_id={chat.id}.")
         await chat.send_message("Проверьте правильность ввода pubg_id. Pubg_id должен состоять только из цифр.")
         return ApplicationStates.pubgID_state
 
     return await _process_application_answer(
-        user=user,
+        user_id=user_id,
         chat=chat,
         message=message,
         question_number=1,
@@ -247,7 +227,8 @@ def _is_correct_age(message: str | None) -> bool:
     return True
 
 
-async def age(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+@updates.check_application_update()
+async def age(user_id: int, chat: Chat, message: Message, context: ContextTypes.DEFAULT_TYPE) -> int:
     """
     Обработка ответа состояния ApplicationStates.old_state.
 
@@ -259,27 +240,13 @@ async def age(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         Это же состояние, если проверка корректности возраста не пройдена, иначе следующее состояние.
 
     """
-    if update.edited_message:
-        return ApplicationStates.age_state
-    user = update.effective_user
-    chat = update.effective_chat
-    message = update.message
-
-    if user is None or chat is None or message is None:
-        logger.critical(
-            "Получен некорректный user или chat или message в обработчике age! Данная ошибка не должна никогда происходить."
-        )
-        return ConversationHandler.END
-
-    logger.info(f"Пользователь chat_id={chat.id} ответил на вопрос age: {message.text}")
-
     if not _is_correct_age(message.text):
         logger.debug(f"Получен некорректный age={message.text} в чате chat_id={chat.id}.")
         await chat.send_message("Проверьте правильность ввода возраста. Возраст должен быть целым числом от 1 до 100.")
         return ApplicationStates.age_state
 
     return await _process_application_answer(
-        user=user,
+        user_id=user_id,
         chat=chat,
         message=message,
         question_number=2,
@@ -290,8 +257,8 @@ async def age(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     )
 
 
-# TODO: Добавить ограничение символов в ответе
-async def game_mode(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+@updates.check_application_update()
+async def game_mode(user_id: int, chat: Chat, message: Message, context: ContextTypes.DEFAULT_TYPE) -> int:
     """
     Обработка ответа состояния ApplicationStates.game_modes_state.
 
@@ -303,21 +270,8 @@ async def game_mode(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         Следующее состояние.
 
     """
-    if update.edited_message:
-        return ApplicationStates.game_modes_state
-    user = update.effective_user
-    chat = update.effective_chat
-    message = update.message
-    if user is None or chat is None or message is None:
-        logger.critical(
-            "Получен некорректный user или chat или message в обработчике game_mode! Данная ошибка не должна никогда происходить."
-        )
-        return ConversationHandler.END
-
-    logger.info(f"Пользователь chat_id={chat.id} ответил на вопрос game_mode: {message.text}")
-
     return await _process_application_answer(
-        user=user,
+        user_id=user_id,
         chat=chat,
         message=message,
         question_number=3,
@@ -328,8 +282,8 @@ async def game_mode(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     )
 
 
-# TODO: Добавить ограничение символов в ответе
-async def activity(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+@updates.check_application_update()
+async def activity(user_id: int, chat: Chat, message: Message, context: ContextTypes.DEFAULT_TYPE) -> int:
     """
     Обработка ответа состояния ApplicationStates.activity_state.
 
@@ -341,21 +295,8 @@ async def activity(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         Следующее состояние.
 
     """
-    if update.edited_message:
-        return ApplicationStates.activity_state
-    user = update.effective_user
-    chat = update.effective_chat
-    message = update.message
-    if user is None or chat is None or message is None:
-        logger.critical(
-            "Получен некорректный user или chat или message в обработчике activity! Данная ошибка не должна никогда происходить."
-        )
-        return ConversationHandler.END
-
-    logger.info(f"Пользователь chat_id={chat.id} ответил на вопрос activity: {message.text}")
-
     return await _process_application_answer(
-        user=user,
+        user_id=user_id,
         chat=chat,
         message=message,
         question_number=4,
@@ -367,7 +308,13 @@ async def activity(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     )
 
 
-async def about_skip(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+@updates.check_application_update()
+async def about_skip(
+    user_id: int,
+    chat: Chat,
+    message: Message,
+    context: ContextTypes.DEFAULT_TYPE,
+) -> int:
     """
     Обработка ответа состояния ApplicationStates.about_state при вводе "Пропустить".
 
@@ -378,31 +325,25 @@ async def about_skip(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     Returns:
         Следующее состояние. Показ обзора анкеты.
     """
-    if update.edited_message:
-        return ApplicationStates.about_state
-    user = update.effective_user
-    chat = update.effective_chat
     answer = "Пусто"
 
-    if user is None or chat is None:
-        logger.critical(
-            "Получен некорректный user или chat в обработчике about_skip! Данная ошибка не должна никогда происходить."
-        )
-        return ConversationHandler.END
-
-    logger.info(f"Пользователь chat_id={chat.id} ответил на вопрос about: {answer}")
-
-    if await _is_new_answer(user, 5) is False and context.user_data["application_completed"] is True:  # type: ignore
-        logger.debug(f"Пользователь user={user} уже отвечал на вопрос about_skip, обновляем его ответ")
-        await _update_answer(user, 5, answer)
+    if await _is_new_answer(user_id, 5) is False and context.user_data["application_completed"] is True:  # type: ignore
+        logger.debug(f"Пользователь user={user_id} уже отвечал на вопрос about_skip, обновляем его ответ")
+        await _update_answer(user_id, 5, answer)
     else:
-        logger.debug(f"Пользователь user={user} еще не отвечал на вопрос about_skip, сохраняем его ответ")
-        await _save_answer(user, 5, answer)
+        logger.debug(f"Пользователь user={user_id} еще не отвечал на вопрос about_skip, сохраняем его ответ")
+        await _save_answer(user_id, 5, answer)
     logger.info(f"Показать обзор заявки для chat_id={chat.id}")
     return await _show_overview(chat)
 
 
-async def about(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+@updates.check_application_update()
+async def about(
+    user_id: int,
+    chat: Chat,
+    message: Message,
+    context: ContextTypes.DEFAULT_TYPE,
+) -> int:
     """
     Обработка ответа состояния ApplicationStates.about_state при вводе текста о себе.
 
@@ -413,26 +354,12 @@ async def about(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     Returns:
         Следующее состояние. Показ обзора анкеты.
     """
-    if update.edited_message:
-        return ApplicationStates.about_state
-    logger.debug("Starting handle about answer")
-    user = update.effective_user
-    chat = update.effective_chat
-    message = update.message
-    if user is None or chat is None or message is None:
-        logger.critical(
-            "Получен некорректный user или chat или message в обработчике activity! Данная ошибка не должна никогда происходить."
-        )
-        return ConversationHandler.END
-
-    logger.info(f"Пользователь chat_id={chat.id} ответил на вопрос about: {message.text}")
-
-    if await _is_new_answer(user, 5) is False and context.user_data["application_completed"] is True:  # type: ignore
-        logger.debug(f"Пользователь user={user} уже отвечал на вопрос about, обновляем его ответ")
-        await _update_answer(user, 5, message.text)
+    if await _is_new_answer(user_id, 5) is False and context.user_data["application_completed"] is True:  # type: ignore
+        logger.debug(f"Пользователь user={user_id} уже отвечал на вопрос about, обновляем его ответ")
+        await _update_answer(user_id, 5, message.text)
     else:
-        logger.debug(f"Пользователь user={user} еще не отвечал на вопрос about, сохраняем его ответ")
-        await _save_answer(user, 5, message.text)
+        logger.debug(f"Пользователь user={user_id} еще не отвечал на вопрос about, сохраняем его ответ")
+        await _save_answer(user_id, 5, message.text)
     logger.info(f"Показать обзор заявки для chat_id={chat.id}")
     return await _show_overview(chat)
 
@@ -466,7 +393,13 @@ async def _show_overview(chat: Chat) -> ApplicationStates.change_or_accept_state
     return ApplicationStates.change_or_accept_state
 
 
-async def user_decision(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+@updates.check_application_update()
+async def user_decision(
+    user_id: int,
+    chat: Chat,
+    message: Message,
+    context: ContextTypes.DEFAULT_TYPE,
+) -> int:
     """
     Обработка ввода варианта ответа при изменении или принятия заявки.
 
@@ -480,28 +413,17 @@ async def user_decision(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
     Returns:
         Состояние для изменения или ConversationHandler.END.
     """
-    if update.edited_message:
-        return ApplicationStates.change_or_accept_state
-    user = update.effective_user
-    chat = update.effective_chat
-    answer = update.message
-    if user is None or chat is None or answer is None:
-        logger.critical(
-            "Получен некорректный user или chat или answer в обработчике user_decision! Данная ошибка не должна никогда происходить."
-        )
-        return ConversationHandler.END
-
     logger.info(f"Обработка варианта ответа пользователя для chat_id={chat.id}")
 
     context.user_data["application_completed"] = True  # type: ignore
     logger.debug(f"Переменная application_completed для chat_id={chat.id} установлена в True")
 
-    logger.info(f"Пользователь chat_id={chat.id} ответил на вопрос overview: {answer.text}")
+    logger.info(f"Пользователь chat_id={chat.id} ответил на вопрос overview: {message.text}")
 
-    return await _choose_action(answer.text, user, chat, context)
+    return await _choose_action(message.text, user_id, chat, context)
 
 
-async def _choose_action(answer: str | None, user: User, chat: Chat, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def _choose_action(answer: str | None, user_id: int, chat: Chat, context: ContextTypes.DEFAULT_TYPE) -> int:
     """
     Выбор действия для пользователя.
 
@@ -515,9 +437,9 @@ async def _choose_action(answer: str | None, user: User, chat: Chat, context: Co
         Состояние для изменения или ConversationHandler.END.
 
     """
-    logger.debug(f"Выбор действия для пользователя user={user}")
+    logger.debug(f"Выбор действия для пользователя user={user_id}")
     if answer == "1":
-        logger.debug(f"Пользователь user={user} выбрал изменить PubgID")
+        logger.debug(f"Пользователь user={user_id} выбрал изменить PubgID")
         await _ask_next_question(
             chat,
             "Напиши свой PUBG ID",
@@ -525,7 +447,7 @@ async def _choose_action(answer: str | None, user: User, chat: Chat, context: Co
         )
         return ApplicationStates.pubgID_state
     if answer == "2":
-        logger.debug(f"Пользователь user={user} выбрал изменить возраст")
+        logger.debug(f"Пользователь user={user_id} выбрал изменить возраст")
         await _ask_next_question(
             chat,
             "Напиши свой возраст",
@@ -533,7 +455,7 @@ async def _choose_action(answer: str | None, user: User, chat: Chat, context: Co
         )
         return ApplicationStates.age_state
     if answer == "3":
-        logger.debug(f"Пользователь user={user} выбрал изменить режимы игры")
+        logger.debug(f"Пользователь user={user_id} выбрал изменить режимы игры")
         await _ask_next_question(
             chat,
             "Какие режимы игры предпочитаешь больше всего? (можно несколько)",
@@ -541,7 +463,7 @@ async def _choose_action(answer: str | None, user: User, chat: Chat, context: Co
         )
         return ApplicationStates.game_modes_state
     if answer == "4":
-        logger.debug(f"Пользователь user={user} выбрал изменить частоту активности")
+        logger.debug(f"Пользователь user={user_id} выбрал изменить частоту активности")
         await _ask_next_question(
             chat,
             "Сколько времени в день готов уделять игре с соклановцами?",
@@ -549,7 +471,7 @@ async def _choose_action(answer: str | None, user: User, chat: Chat, context: Co
         )
         return ApplicationStates.activity_state
     if answer == "5":
-        logger.debug(f"Пользователь user={user} выбрал изменить о себе")
+        logger.debug(f"Пользователь user={user_id} выбрал изменить о себе")
         await _ask_next_question(
             chat,
             "Расскажи о себе либо пропусти вопрос. Чем больше информации мы о тебе получим, тем выше вероятность одобрения заявки.",
@@ -557,21 +479,21 @@ async def _choose_action(answer: str | None, user: User, chat: Chat, context: Co
         )
         return ApplicationStates.about_state
     if answer == "6":
-        logger.debug(f"Пользователь user={user} выбрал отправить заявку администраторам")
-        await _change_application_status_to_waiting(user)
+        logger.debug(f"Пользователь user={user_id} выбрал отправить заявку администраторам")
+        await _change_application_status_to_waiting(user_id)
         await chat.send_message(
             "Заявка отправлена, ожидайте ответа!",
             reply_markup=keyboards.REMOVE_KEYBOARD,
         )
-        await sender.send_application_to_admins(bot=context.bot, user_id=user.id)
+        await sender.send_application_to_admins(bot=context.bot, user_id=user_id)
         return ConversationHandler.END
-    logger.debug(f"Пользователь user={user} ввел неверную команду")
+    logger.debug(f"Пользователь user={user_id} ввел неверную команду")
     await chat.send_message("Неверная команда. Выберите число от 1 до 6.")
     return ApplicationStates.change_or_accept_state
 
 
 async def _process_application_answer(
-    user: User,
+    user_id: int,
     chat: Chat,
     message: Message,
     question_number: int,
@@ -595,20 +517,20 @@ async def _process_application_answer(
     Returns:
         Новое состояние.
     """
-    logger.debug(f"Обработка ответа на вопрос question_number={question_number} для пользователя user={user}")
-    if await _is_new_answer(user, question_number) is False and context.user_data["application_completed"] is True:  # type: ignore
-        logger.debug(f"Пользователь user={user} уже отвечал на вопрос question_number={question_number}, обновляем")
-        await _update_answer(user, question_number, message.text)
-        logger.debug(f"Показываем овервью анкеты для пользователя user={user}")
+    logger.debug(f"Обработка ответа на вопрос question_number={question_number} для пользователя user={user_id}")
+    if await _is_new_answer(user_id, question_number) is False and context.user_data["application_completed"] is True:  # type: ignore
+        logger.debug(f"Пользователь user={user_id} уже отвечал на вопрос question_number={question_number}, обновляем")
+        await _update_answer(user_id, question_number, message.text)
+        logger.debug(f"Показываем овервью анкеты для пользователя user={user_id}")
         return await _show_overview(chat)
-    logger.debug(f"Пользователь user={user} еще не отвечал на вопрос question_number={question_number}, сохраняем")
-    await _save_answer(user, question_number, message.text)
+    logger.debug(f"Пользователь user={user_id} еще не отвечал на вопрос question_number={question_number}, сохраняем")
+    await _save_answer(user_id, question_number, message.text)
     await _ask_next_question(chat, next_message, keyboard)
-    logger.debug(f"Возвращаем следующее состояние next_state={next_state} для пользователя user={user}")
+    logger.debug(f"Возвращаем следующее состояние next_state={next_state} для пользователя user={user_id}")
     return next_state
 
 
-async def _change_application_status_to_waiting(user: User) -> None:
+async def _change_application_status_to_waiting(user_id: int) -> None:
     """
     Изменяем статус заявки на "ожидание".
 
@@ -618,17 +540,17 @@ async def _change_application_status_to_waiting(user: User) -> None:
     Returns:
         None
     """
-    logger.debug(f"Изменяем статус заявки на ожидание для пользователя user={user}")
+    logger.debug(f"Изменяем статус заявки на ожидание для пользователя user={user_id}")
     async with Session() as session:
         logger.debug("Подключение к базе данных прошло успешно")
         db = Database(session)
-        user_application = await db.application.get_active_application(user.id)
+        user_application = await db.application.get_active_application(user_id)
         await db.application.change_status(user_application.id, 2)
         await session.commit()
-        logger.debug(f"Статус заявки для пользователя user={user} изменен на ожидание")
+        logger.debug(f"Статус заявки для пользователя user={user_id} изменен на ожидание")
 
 
-async def _is_new_answer(user: User, question_number: int) -> bool:
+async def _is_new_answer(user_id: int, question_number: int) -> bool:
     """
     Проверка на новый ответ для пользователя.
 
@@ -640,22 +562,24 @@ async def _is_new_answer(user: User, question_number: int) -> bool:
         True, если новый ответ, False, если нет.
 
     """
-    logger.debug(f"Проверка на новый ответ для пользователя user={user} для вопроса question_number={question_number}")
+    logger.debug(
+        f"Проверка на новый ответ для пользователя user={user_id} для вопроса question_number={question_number}"
+    )
     async with Session() as session:
         logger.debug("Подключение к базе данных прошло успешно")
         db = Database(session)
-        user_application = await db.application.get_active_application(user.id)
+        user_application = await db.application.get_active_application(user_id)
         user_answer = await db.application_answer.get_application_answer_text_by_question_number(
             user_application.id, question_number
         )
         if user_answer is not None:
-            logger.debug(f"Пользователь user={user} уже отвечал на вопрос question_number={question_number}")
+            logger.debug(f"Пользователь user={user_id} уже отвечал на вопрос question_number={question_number}")
             return False
-        logger.debug(f"Пользователь user={user} еще не отвечал на вопрос question_number={question_number}")
+        logger.debug(f"Пользователь user={user_id} еще не отвечал на вопрос question_number={question_number}")
         return True
 
 
-async def _save_answer(user: User, question_number: int, answer: str | None) -> None:
+async def _save_answer(user_id: int, question_number: int, answer: str | None) -> None:
     """
     Сохранение ответа на вопрос.
 
@@ -668,20 +592,20 @@ async def _save_answer(user: User, question_number: int, answer: str | None) -> 
         None
     """
     logger.info(
-        f"Сохранение ответа answer={answer} для пользователя user_id={user.id} для вопроса question_number={question_number}"
+        f"Сохранение ответа answer={answer} для пользователя user_id={user_id} для вопроса question_number={question_number}"
     )
     async with Session() as session:
         logger.debug("Подключение к базе данных прошло успешно")
         db = Database(session)
-        user_application = await db.application.get_active_application(user.id)
+        user_application = await db.application.get_active_application(user_id)
         await db.application_answer.create(user_application.id, question_number, answer)
         logger.debug(
-            f"Ответ пользователя user_id={user.id} для вопроса question_number={question_number} анкеты application_id={user_application.id} сохранен"
+            f"Ответ пользователя user_id={user_id} для вопроса question_number={question_number} анкеты application_id={user_application.id} сохранен"
         )
         await session.commit()
 
 
-async def _update_answer(user: User, question_number: int, answer: str | None) -> None:
+async def _update_answer(user_id: int, question_number: int, answer: str | None) -> None:
     """
     Обновление ответа на вопрос.
 
@@ -694,15 +618,15 @@ async def _update_answer(user: User, question_number: int, answer: str | None) -
         None
     """
     logger.debug(
-        f"Обновление ответа answer={answer} для пользователя user_id={user.id} для вопроса question_number={question_number}"
+        f"Обновление ответа answer={answer} для пользователя user_id={user_id} для вопроса question_number={question_number}"
     )
     async with Session() as session:
         logger.debug("Подключение к базе данных прошло успешно")
         db = Database(session)
-        user_application = await db.application.get_active_application(user.id)
+        user_application = await db.application.get_active_application(user_id)
         await db.application_answer.update_question_answer(user_application.id, question_number, answer)
         logger.debug(
-            f"Ответ пользователя user_id={user.id} для вопроса question_number={question_number} анкеты application_id={user_application.id} обновлен на answer={answer}"
+            f"Ответ пользователя user_id={user_id} для вопроса question_number={question_number} анкеты application_id={user_application.id} обновлен на answer={answer}"
         )
         await session.commit()
 
