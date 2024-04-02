@@ -1,5 +1,6 @@
 from .base import Base
 from sqlalchemy import BigInteger
+from sqlalchemy import Boolean
 from sqlalchemy import Column
 from sqlalchemy import String
 from sqlalchemy import TIMESTAMP
@@ -27,6 +28,7 @@ class User(Base):
     username = Column(String(255))
     first_name = Column(String(64))
     last_name = Column(String(64))
+    is_banned = Column(Boolean, default=False, nullable=False)
     created_at = Column(TIMESTAMP, server_default=func.now())
 
     applications = relationship(
