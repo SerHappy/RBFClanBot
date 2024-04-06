@@ -11,7 +11,19 @@ import keyboards
 
 async def check_user_ability_to_fill_application(user_id: int, chat: Chat, session: Session) -> bool:
     """Проверка возможности заполнения анкеты."""
-    return await _check_application_status(user_id, chat, session)
+    if await is_user_able_to_start(user_id, chat, session):
+        return await _check_application_status(user_id, chat, session)
+    return False
+
+
+async def is_user_able_to_start(user_id: int, chat: Chat, session: Session) -> bool:
+    """Проверка забанен ли пользователь."""
+    db = Database(session)
+    if await db.user.is_user_banned(user_id):
+        logger.debug(f"Пользователь user_id={user_id} забанен, заполнение анкеты невозможно")
+        await chat.send_message("Вы забанены. Заполнение анкеты невозможно", reply_markup=keyboards.REMOVE_KEYBOARD)
+        return False
+    return True
 
 
 async def _check_application_status(user_id: int, chat: Chat, session: Session) -> bool:

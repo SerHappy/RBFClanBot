@@ -1,6 +1,7 @@
 from .abstract import Repository
 from loguru import logger
 from models import User
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -17,6 +18,7 @@ class UserRepository(Repository[User]):
         username: str | None = None,
         first_name: str | None = None,
         last_name: str | None = None,
+        is_banned: bool = False,
     ) -> User:
         """Создание пользователя.
 
@@ -36,6 +38,7 @@ class UserRepository(Repository[User]):
                 username=username,
                 first_name=first_name,
                 last_name=last_name,
+                is_banned=is_banned,
             )
         )
         logger.debug(f"Создан пользователь с id={id}")
@@ -47,6 +50,7 @@ class UserRepository(Repository[User]):
         username: str | None = None,
         first_name: str | None = None,
         last_name: str | None = None,
+        is_banned: bool = False,
     ) -> User:
         """Создание пользователя в случае его отсутствия.
 
@@ -63,5 +67,31 @@ class UserRepository(Repository[User]):
         user = await self.get(id)
         if user is None:
             logger.debug(f"Пользователь с id={id} не существует, создаем")
-            user = await self.create(id, username, first_name, last_name)
+            user = await self.create(id, username, first_name, last_name, is_banned)
         return user
+
+    async def is_user_banned(self, user_id: int) -> bool:
+        """Проверка забанен ли пользователь."""
+        user = await self.get(user_id)
+        if not user:
+            logger.error(f"Пользователь с id={user_id} не найден при проверке бана.")
+            return False
+        return user.is_banned
+
+    async def ban_user(self, user_id: int):
+        """Забанить пользователя."""
+        user = await self.get(user_id)
+        if not user:
+            logger.error(f"Пользователь с id={user_id} не найден при попытке бане.")
+            return
+        await self.session.execute(update(User).where(User.id == user_id).values(is_banned=True))
+        logger.info(f"Пользователь id={user_id} был забанен.")
+
+    async def unban_user(self, user_id: int):
+        """Разбанить пользователя."""
+        user = await self.get(user_id)
+        if not user:
+            logger.error(f"Пользователь с id={user_id} не найден при попытке разбана.")
+            return
+        await self.session.execute(update(User).where(User.id == user_id).values(is_banned=False))
+        logger.info(f"Пользователь id={user_id} был разбанен.")

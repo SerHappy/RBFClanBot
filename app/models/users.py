@@ -20,6 +20,7 @@ class User(Base):
     - first_name (String(64)): имя
     - last_name (String(64)): фамилия
     - created_at (TIMESTAMP): дата создания записи
+    - is_banned (Boolean): забанен ли пользователь. По умолчанию False
     """
 
     __tablename__ = "users"

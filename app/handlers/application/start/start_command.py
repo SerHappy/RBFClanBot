@@ -95,7 +95,7 @@ async def _ask_for_pubg_id(chat: Chat) -> ApplicationStates.pubgID_state:
     """
     logger.debug(f"Запрашиваем ответ на pubg_id в чате chat_id={chat.id}.")
     await chat.send_message(
-        "Напиши свой pubgID",
+        "Напиши свой PUBG ID",
         reply_markup=keyboards.REMOVE_KEYBOARD,
     )
     return ApplicationStates.pubgID_state

@@ -44,3 +44,43 @@ def check_application_update(
         return wrapper
 
     return decorator
+
+
+def check_update_and_provide_data(
+    need_callback: bool = False,
+    need_message: bool = False,
+):
+    """Декоратор для проверки update и предоставления данных обработчику."""
+
+    def decorator(update_func: Callable):
+        @wraps(update_func)
+        async def wrapper(update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs):
+            logger.debug(f"Выполняется проверка update и предоставление данных для обработчика {update_func.__name__}.")
+
+            chat = update.effective_chat
+            if chat is None:
+                logger.critical(f"Получен некорректный chat при попытке вызова обработчика {update_func.__name__}.")
+                return ConversationHandler.END
+
+            callback = update.callback_query if need_callback else None
+            message = update.message if need_message else None
+
+            if need_callback and callback is None:
+                logger.warning(f"Отсутствует callback при вызове обработчика {update_func.__name__}.")
+                return ConversationHandler.END
+
+            if need_message and message is None:
+                logger.warning(f"Отсутствует message при вызове обработчика {update_func.__name__}.")
+                return ConversationHandler.END
+
+            if need_callback and not need_message and callback:
+                return await update_func(callback=callback, chat=chat, context=context)
+            elif need_message and not need_callback and message:
+                return await update_func(chat=chat, message=message, context=context)
+            else:
+                logger.error("Неверная конфигурация декоратора, проверьте параметры.")
+                return ConversationHandler.END
+
+        return wrapper
+
+    return decorator

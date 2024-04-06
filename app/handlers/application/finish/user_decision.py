@@ -68,7 +68,7 @@ async def _choose_action(answer: str | None, user_id: int, chat: Chat, context: 
         logger.debug(f"Пользователь user={user_id} выбрал изменить возраст")
         await application.ask_next_question(
             chat,
-            "Напиши свой возраст",
+            "Сколько тебе полных лет?",
             keyboards.REMOVE_KEYBOARD,
         )
         return ApplicationStates.age_state
@@ -84,7 +84,7 @@ async def _choose_action(answer: str | None, user_id: int, chat: Chat, context: 
         logger.debug(f"Пользователь user={user_id} выбрал изменить частоту активности")
         await application.ask_next_question(
             chat,
-            "Сколько времени в день готов уделять игре с соклановцами?",
+            "Сколько времени в день готов уделять игре с соклановцами? (примерно; можно по дням)",
             keyboards.REMOVE_KEYBOARD,
         )
         return ApplicationStates.activity_state
@@ -100,11 +100,11 @@ async def _choose_action(answer: str | None, user_id: int, chat: Chat, context: 
         logger.debug(f"Пользователь user={user_id} выбрал отправить заявку администраторам")
         await application.change_application_status_to_waiting(user_id)
         await chat.send_message(
-            "Заявка отправлена, ожидайте ответа!",
+            "Заявка отправлена, ожидай ответа!",
             reply_markup=keyboards.REMOVE_KEYBOARD,
         )
         await message_service.send_application_to_admins(bot=context.bot, user_id=user_id)
         return ConversationHandler.END
     logger.debug(f"Пользователь user={user_id} ввел неверную команду")
-    await chat.send_message("Неверная команда. Выберите число от 1 до 6.")
+    await chat.send_message("Неверная команда. Выбери число от 1 до 6.")
     return ApplicationStates.change_or_accept_state
