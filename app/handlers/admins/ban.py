@@ -25,6 +25,7 @@ async def ban_user_preprocess(update: Update, context: ContextTypes.DEFAULT_TYPE
     await _ban_user(chat, int(user_id))
 
 
+# TODO: Вынести в сервис пользователя
 async def _ban_user(chat: Chat, user_id: int) -> None:
     async with Session() as session:
         db = Database(session)
