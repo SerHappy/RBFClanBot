@@ -39,3 +39,4 @@ class Application(Base):
     user = relationship("User", back_populates="applications")
     status = relationship("ApplicationStatus", back_populates="applications")
     answers = relationship("ApplicationAnswer", back_populates="application")
+    admin_applications = relationship("AdminProcessingApplication", back_populates="application")

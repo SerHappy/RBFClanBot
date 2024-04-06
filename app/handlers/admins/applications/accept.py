@@ -28,11 +28,13 @@ async def accept_application(callback: CallbackQuery, chat: Chat, context: Conte
         return
     application_id = int(callback.data.split(":")[-1])
     logger.info(f"Принятие заявки application_id={application_id}.")
+    admin_id = callback.from_user.id
     async with Session() as session:
         logger.debug("Подключение к базе данных прошло успешно")
         db: Database = Database(session)
         link = await link_service.generate_invite_link(context.application.bot)
         await db.application.approve_application(application_id, link)
+        await db.admin_processing_application.delete(admin_id)
         new_text = await formatting_service.format_application(application_id, session)
         await session.commit()
     await callback.edit_message_text(new_text, parse_mode="MarkdownV2")

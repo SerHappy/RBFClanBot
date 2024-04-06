@@ -36,6 +36,7 @@ async def take_application_handler(callback: CallbackQuery, chat: Chat, context:
         logger.debug("Подключение к базе данных прошло успешно")
         db = Database(session)
         application = await db.application.get(application_id)
+        admin_processing_application = await db.admin_processing_application.get_admin_processing_application(admin_id)
         if application.status_id != 2:
             logger.error(
                 f"Попытка взять в обработку заявку {application_id=} с неверным статусом {application.status_id=} "
@@ -44,7 +45,18 @@ async def take_application_handler(callback: CallbackQuery, chat: Chat, context:
                 text=f"Невозможно взять в обработку заявку со статусом {application.status_id=}", show_alert=True
             )
             return ConversationHandler.END
+        if admin_processing_application:
+            print(admin_processing_application)
+            logger.error(
+                f"Попытка взять в обработку заявку {application_id=} админом {admin_id=}, который уже обрабатывает заявку"
+            )
+            await callback.answer(
+                text=f"Вы уже взяли заявку {admin_processing_application.application_id} в обработку. Обработайте ее прежде чем взять еще одну",
+                show_alert=True,
+            )
+            return ConversationHandler.END
         await db.application.change_status(application_id, 5)
+        await db.admin_processing_application.create(admin_id, application_id)
         await session.commit()
         await application_message.edit_text(
             text=await formatting_service.format_application(application_id, session),

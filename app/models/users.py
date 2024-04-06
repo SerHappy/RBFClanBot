@@ -38,3 +38,8 @@ class User(Base):
         order_by="Application.decision_date",
         cascade="all, delete",
     )
+    admin_applications = relationship(
+        "AdminProcessingApplication",
+        back_populates="admin",
+        cascade="all, delete",
+    )

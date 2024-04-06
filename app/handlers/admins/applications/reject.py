@@ -60,6 +60,10 @@ async def reject_reason_hander(message: Message, chat: Chat, context: ContextTyp
         logger.error("Получена некорректная причина отказа.")
         return ConversationHandler.END
     application_id = context.user_data["application_id"]  # type: ignore
+    admin = message.from_user
+    if not admin:
+        logger.error("Получен некорректный admin при попытке вызова reject_reason_hander.")
+        return ConversationHandler.END
     logger.info(f"Получение причины отказа application_id={application_id}.")
     await chat.send_message(
         "Причина отказа для Заявки №{}:\n{}.".format(application_id, message.text),
@@ -68,6 +72,7 @@ async def reject_reason_hander(message: Message, chat: Chat, context: ContextTyp
         logger.debug("Подключение к базе данных прошло успешно")
         db: Database = Database(session)
         await db.application.reject_application(application_id, message.text)
+        await db.admin_processing_application.delete(admin.id)
         new_text = await formatting_service.format_application(application_id, session)
         await session.commit()
     bot = context.application.bot

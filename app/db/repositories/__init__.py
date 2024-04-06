@@ -1,4 +1,5 @@
 from .abstract import Repository
+from .admin_processing_application import AdminProcessingApplicationRepository
 from .application import ApplicationRepository
 from .application_answer import ApplicationAnswerRepository
 from .application_status import ApplicationStatusRepository
@@ -11,4 +12,5 @@ __all__ = [
     "ApplicationRepository",
     "ApplicationAnswerRepository",
     "ApplicationStatusRepository",
+    "AdminProcessingApplicationRepository",
 ]

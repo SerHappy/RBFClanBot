@@ -1,3 +1,4 @@
+from db.repositories import AdminProcessingApplicationRepository
 from db.repositories import ApplicationAnswerRepository
 from db.repositories import ApplicationRepository
 from db.repositories import ApplicationStatusRepository
@@ -39,3 +40,4 @@ class Database:
         self.application = ApplicationRepository(session)
         self.application_answer = ApplicationAnswerRepository(session)
         self.application_status = ApplicationStatusRepository(session)
+        self.admin_processing_application = AdminProcessingApplicationRepository(session)

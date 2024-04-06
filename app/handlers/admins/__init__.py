@@ -25,7 +25,6 @@ def register_admin_handlers(application: Application):
         CallbackQueryHandler(take_application_handler, pattern=f"^{Callbacks.APPLICATION_HANDLE.value.split(':')[0]}")
     )
     conv_hander = ConversationHandler(
-        per_user=False,
         entry_points=[
             CallbackQueryHandler(
                 reject_application_start, pattern=f"^{Callbacks.APPLICATION_DECLINE.value.split(':')[0]}"
