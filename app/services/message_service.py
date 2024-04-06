@@ -1,10 +1,11 @@
+from datetime import timedelta
 from db import Database
 from db import Session
 from decouple import config
 from loguru import logger
 from services import formatting_service
 from telegram import Bot
-from datetime import timedelta
+
 import keyboards
 
 
@@ -31,7 +32,7 @@ async def send_application_to_admins(bot: Bot, user_id: int) -> None:
     await bot.send_message(
         text=message,
         chat_id=admin_chat,
-        reply_markup=keyboards.ADMIN_DECISION_KEYBOARD(application_id),
+        reply_markup=keyboards.ADMIN_HANDLE_APPLICATION_KEYBOARD(application_id),
         parse_mode="MarkdownV2",
     )
 

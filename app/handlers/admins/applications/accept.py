@@ -1,19 +1,18 @@
 from db import Database
 from db import Session
 from decorators import updates
+from decouple import config
 from loguru import logger
 from services import formatting_service
 from services import link_service
 from services import message_service
 from telegram import CallbackQuery
 from telegram import Chat
-from telegram.ext import CallbackContext
-
-import keyboards
+from telegram.ext import ContextTypes
 
 
 @updates.check_update_and_provide_data(need_callback=True)
-async def accept_application(callback: CallbackQuery, chat: Chat, context: CallbackContext) -> None:
+async def accept_application(callback: CallbackQuery, chat: Chat, context: ContextTypes.DEFAULT_TYPE) -> None:
     """
     Обработчик коллбека принятия заявки.
 
@@ -36,8 +35,13 @@ async def accept_application(callback: CallbackQuery, chat: Chat, context: Callb
         await db.application.approve_application(application_id, link)
         new_text = await formatting_service.format_application(application_id, session)
         await session.commit()
-    await callback.edit_message_reply_markup(keyboards.REMOVE_INLINE_KEYBOARD)
     await callback.edit_message_text(new_text, parse_mode="MarkdownV2")
+    await context.application.bot.edit_message_text(
+        new_text,
+        chat_id=config("ADMIN_CHAT_ID"),
+        message_id=context.user_data["application_message_id"],  # type: ignore
+        parse_mode="MarkdownV2",
+    )
     logger.debug("Текст заявки обновлен.")
     await chat.send_message("Заявка №{} принята.".format(application_id))
     bot = context.application.bot

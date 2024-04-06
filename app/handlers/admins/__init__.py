@@ -1,9 +1,10 @@
-from .accept import accept_application
-from .ban import ban_user_preprocess
-from .reject import reject_application_start
-from .reject import reject_back_button_handler
-from .reject import reject_reason_hander
-from .unban import unban_user_preprocess
+from .applications.accept import accept_application
+from .applications.reject import reject_application_start
+from .applications.reject import reject_back_button_handler
+from .applications.reject import reject_reason_hander
+from .applications.take import take_application_handler
+from .users.ban import ban_user_preprocess
+from .users.unban import unban_user_preprocess
 from config import Callbacks
 from config import DeclineUserStates
 from telegram.ext import Application
@@ -14,10 +15,14 @@ from telegram.ext import filters
 from telegram.ext import MessageHandler
 
 
+# TODO: Разнести по __init__ файлам
 def register_admin_handlers(application: Application):
     """Добавление обработчика FSM состояния заполнения анкеты."""
     application.add_handler(
         CallbackQueryHandler(accept_application, pattern=f"^{Callbacks.APPLICATION_ACCEPT.value.split(':')[0]}")
+    )
+    application.add_handler(
+        CallbackQueryHandler(take_application_handler, pattern=f"^{Callbacks.APPLICATION_HANDLE.value.split(':')[0]}")
     )
     conv_hander = ConversationHandler(
         per_user=False,

@@ -2,6 +2,7 @@ from config import DeclineUserStates
 from db import Database
 from db import Session
 from decorators import updates
+from decouple import config
 from loguru import logger
 from services import formatting_service
 from services import message_service
@@ -72,6 +73,12 @@ async def reject_reason_hander(message: Message, chat: Chat, context: ContextTyp
     bot = context.application.bot
     message: Message = context.user_data["message"]  # type: ignore
     await message.edit_text(text=new_text, reply_markup=keyboards.REMOVE_INLINE_KEYBOARD, parse_mode="MarkdownV2")
+    await context.application.bot.edit_message_text(
+        new_text,
+        chat_id=config("ADMIN_CHAT_ID"),
+        message_id=context.user_data["application_message_id"],  # type: ignore
+        parse_mode="MarkdownV2",
+    )
     logger.debug("Текст заявки обновлен.")
     await chat.send_message("Заявка №{} отклонена.".format(application_id))
     await message_service.send_admin_decision_to_user(application_id, bot)
