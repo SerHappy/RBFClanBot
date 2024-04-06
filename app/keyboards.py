@@ -32,6 +32,28 @@ def ADMIN_DECISION_KEYBOARD(application_id: int) -> InlineKeyboardMarkup:
     )
 
 
+def ADMIN_HANDLE_APPLICATION_KEYBOARD(application_id: int) -> InlineKeyboardMarkup:
+    """
+    Создание клавиатуры для взятия заявки в обработку.
+
+    Args:
+        application_id (int): Идентификатор заявки.
+
+    Returns:
+        InlineKeyboardMarkup: Клавиатура с кнопкой "Взять в обработку", в callback_data передается application_id.
+    """
+    return InlineKeyboardMarkup(
+        (
+            (
+                InlineKeyboardButton(
+                    "Взять в обработку",
+                    callback_data=Callbacks.APPLICATION_HANDLE.value.format(application_id=application_id),
+                ),
+            ),
+        )
+    )
+
+
 ADMIN_DECLINE_BACK_KEYBOARD = InlineKeyboardMarkup(
     [[InlineKeyboardButton("Назад", callback_data=Callbacks.APPLICATION_DECLINE_BACK.value)]]
 )
