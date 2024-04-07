@@ -28,10 +28,14 @@ def _loguru_setup() -> None:
     logger.add(
         sink=full_log_path,
         level="DEBUG",
+        rotation="1 day",
+        compression="zip",
     )
     logger.add(
         sink=warnings_log_path,
         level="WARNING",
+        rotation="10 MB",
+        compression="zip",
     )
     logger.info("Настройка логгера прошла успешно.")
 
