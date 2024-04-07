@@ -29,4 +29,7 @@ class AdminProcessingApplicationRepository(Repository[AdminProcessingApplication
         """Удаление связи админа и обрабатываемой им заявки."""
         logger.debug(f"Удаление связи админа {admin_id=} и заявки")
         row = await self.get_admin_processing_application(admin_id=admin_id)
-        await self.session.delete(row)
+        try:
+            await self.session.delete(row)
+        except Exception as e:
+            logger.error(f"Ошибка при удалении связи админа {admin_id=} и заявки: {e}")
