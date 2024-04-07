@@ -38,6 +38,8 @@ async def accept_application(callback: CallbackQuery, chat: Chat, context: Conte
         new_text = await formatting_service.format_application(application_id, session)
         await session.commit()
     await callback.edit_message_text(new_text, parse_mode="MarkdownV2")
+    bot = context.application.bot
+    await message_service.send_admin_decision_to_user(application_id, bot)
     await context.application.bot.edit_message_text(
         new_text,
         chat_id=config("ADMIN_CHAT_ID"),
@@ -46,5 +48,3 @@ async def accept_application(callback: CallbackQuery, chat: Chat, context: Conte
     )
     logger.debug("Текст заявки обновлен.")
     await chat.send_message("Заявка №{} принята.".format(application_id))
-    bot = context.application.bot
-    await message_service.send_admin_decision_to_user(application_id, bot)
