@@ -7,7 +7,9 @@ from models.applications import Application
 from telegram import Chat
 
 
-async def check_user_ability_to_fill_application(user_id: int, chat: Chat, session: Session) -> bool:
+async def check_user_ability_to_fill_application(
+    user_id: int, chat: Chat, session: Session
+) -> bool:
     """Проверка возможности заполнения анкеты."""
     if await is_user_able_to_start(user_id, chat, session):
         return await _check_application_status(user_id, chat, session)
@@ -18,8 +20,13 @@ async def is_user_able_to_start(user_id: int, chat: Chat, session: Session) -> b
     """Проверка забанен ли пользователь."""
     db = Database(session)
     if await db.user.is_user_banned(user_id):
-        logger.debug(f"Пользователь user_id={user_id} забанен, заполнение анкеты невозможно")
-        await chat.send_message("Вы забанены. Заполнение анкеты невозможно", reply_markup=keyboards.REMOVE_KEYBOARD)
+        logger.debug(
+            f"Пользователь user_id={user_id} забанен, заполнение анкеты невозможно"
+        )
+        await chat.send_message(
+            "Вы забанены. Заполнение анкеты невозможно",
+            reply_markup=keyboards.REMOVE_KEYBOARD,
+        )
         return False
     return True
 
@@ -41,7 +48,9 @@ async def _check_application_status(user_id: int, chat: Chat, session: Session) 
     application: Application = await db.application.get_active_application(user_id)
 
     if application.status_id == 1:
-        logger.debug(f"Пользователь user_id={application.user_id} заново заполняет анкету")
+        logger.debug(
+            f"Пользователь user_id={application.user_id} заново заполняет анкету"
+        )
         await db.application_answer.delete_all_answers_by_application_id(application.id)
         return True
     if application.status_id == 2:
@@ -63,7 +72,7 @@ async def _check_application_status(user_id: int, chat: Chat, session: Session) 
         )
         return False
     if application.status_id == 4:
-        now = datetime.now()
+        now = datetime.utcnow()
         if now - application.decision_date < timedelta(days=30):
             logger.debug(
                 f"Пользователь user_id={application.user_id} пытается подать заявку повторно, но еще не прошло 30 дней, FSM заполнения анкеты не запускается"
