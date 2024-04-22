@@ -1,11 +1,11 @@
-from .abstract import Repository
 from collections.abc import Sequence
+
 from loguru import logger
 from models import ApplicationAnswer
-from sqlalchemy import delete
-from sqlalchemy import select
-from sqlalchemy import update
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from .abstract import Repository
 
 
 class ApplicationAnswerRepository(Repository[ApplicationAnswer]):

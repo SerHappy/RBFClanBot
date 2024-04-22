@@ -1,8 +1,9 @@
-from .abstract import Repository
 from loguru import logger
 from models import AdminProcessingApplication
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from .abstract import Repository
 
 
 class AdminProcessingApplicationRepository(Repository[AdminProcessingApplication]):

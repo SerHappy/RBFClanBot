@@ -1,5 +1,3 @@
-from db.engine import Database
-from db.engine import Session
-
+from db.engine import Database, Session
 
 __all__ = ["Session", "Database"]

@@ -1,14 +1,9 @@
-from models import Base
-from sqlalchemy import delete
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from typing import Any
-from typing import Generic
-from typing import Type
-from typing import TypeVar
-
 import abc
+from typing import Any, Generic, Type, TypeVar
 
+from models import Base
+from sqlalchemy import delete, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 AbstractModel = TypeVar("AbstractModel")
 

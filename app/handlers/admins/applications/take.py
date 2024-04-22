@@ -1,14 +1,10 @@
-from db import Database
-from db import Session
+import keyboards
+from db import Database, Session
 from decorators import updates
 from loguru import logger
 from services import formatting_service
-from telegram import CallbackQuery
-from telegram import Chat
-from telegram.ext import ContextTypes
-from telegram.ext import ConversationHandler
-
-import keyboards
+from telegram import CallbackQuery, Chat
+from telegram.ext import ContextTypes, ConversationHandler
 
 
 # TODO: Переименовать функцию

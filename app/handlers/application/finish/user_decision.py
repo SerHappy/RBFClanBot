@@ -1,14 +1,10 @@
+import keyboards
 from config import ApplicationStates
 from decorators import updates
 from loguru import logger
-from services import application
-from services import message_service
-from telegram import Chat
-from telegram import Message
-from telegram.ext import ContextTypes
-from telegram.ext import ConversationHandler
-
-import keyboards
+from services import application, message_service
+from telegram import Chat, Message
+from telegram.ext import ContextTypes, ConversationHandler
 
 
 @updates.check_application_update()

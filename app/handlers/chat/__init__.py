@@ -1,7 +1,6 @@
+from telegram.ext import Application, MessageHandler, filters
+
 from .new_user import new_user_handler
-from telegram.ext import Application
-from telegram.ext import filters
-from telegram.ext import MessageHandler
 
 
 def register_chat_handlers(application: Application) -> None:

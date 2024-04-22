@@ -1,15 +1,15 @@
-from config import ApplicationStates
-from db import Database
-from db import Session
-from loguru import logger
-from telegram import Chat
-from telegram import InlineKeyboardMarkup
-from telegram import Message
-from telegram import ReplyKeyboardMarkup
-from telegram import ReplyKeyboardRemove
-from telegram.ext import ContextTypes
-
 import keyboards
+from config import ApplicationStates
+from db import Database, Session
+from loguru import logger
+from telegram import (
+    Chat,
+    InlineKeyboardMarkup,
+    Message,
+    ReplyKeyboardMarkup,
+    ReplyKeyboardRemove,
+)
+from telegram.ext import ContextTypes
 
 
 async def process_application_answer(

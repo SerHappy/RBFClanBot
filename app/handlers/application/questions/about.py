@@ -1,8 +1,7 @@
 from decorators import updates
 from loguru import logger
 from services import application
-from telegram import Chat
-from telegram import Message
+from telegram import Chat, Message
 from telegram.ext import ContextTypes
 
 

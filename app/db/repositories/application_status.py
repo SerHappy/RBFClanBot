@@ -1,6 +1,7 @@
-from .abstract import Repository
 from models import ApplicationStatus
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from .abstract import Repository
 
 
 class ApplicationStatusRepository(Repository[ApplicationStatus]):

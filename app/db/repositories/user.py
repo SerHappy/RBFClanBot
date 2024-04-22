@@ -1,8 +1,9 @@
-from .abstract import Repository
 from loguru import logger
 from models import User
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from .abstract import Repository
 
 
 class UserRepository(Repository[User]):

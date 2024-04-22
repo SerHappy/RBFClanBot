@@ -1,12 +1,11 @@
 from datetime import timedelta
-from db import Database
-from db import Session
+
+import keyboards
+from db import Database, Session
 from decouple import config
 from loguru import logger
 from services import formatting_service
 from telegram import Bot
-
-import keyboards
 
 
 async def send_application_to_admins(bot: Bot, user_id: int) -> None:

@@ -1,11 +1,8 @@
-from db import Database
-from db import Session
+from db import Database, Session
 from decouple import config
 from loguru import logger
-from telegram import Chat
-from telegram import Update
-from telegram.ext import ContextTypes
-from telegram.ext import ConversationHandler
+from telegram import Chat, Update
+from telegram.ext import ContextTypes, ConversationHandler
 from validators import question_validators
 
 

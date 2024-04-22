@@ -1,9 +1,7 @@
-from .base import Base
-from sqlalchemy import BigInteger
-from sqlalchemy import Column
-from sqlalchemy import ForeignKey
-from sqlalchemy import Integer
+from sqlalchemy import BigInteger, Column, ForeignKey, Integer
 from sqlalchemy.orm import relationship
+
+from .base import Base
 
 
 class AdminProcessingApplication(Base):

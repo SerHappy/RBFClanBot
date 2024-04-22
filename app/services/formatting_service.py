@@ -1,5 +1,4 @@
-from db import Database
-from db import Session
+from db import Database, Session
 from loguru import logger
 from models import Application
 

@@ -1,13 +1,17 @@
-from db.repositories import AdminProcessingApplicationRepository
-from db.repositories import ApplicationAnswerRepository
-from db.repositories import ApplicationRepository
-from db.repositories import ApplicationStatusRepository
-from db.repositories import UserRepository
+from db.repositories import (
+    AdminProcessingApplicationRepository,
+    ApplicationAnswerRepository,
+    ApplicationRepository,
+    ApplicationStatusRepository,
+    UserRepository,
+)
 from decouple import config
-from sqlalchemy.ext.asyncio import async_sessionmaker
-from sqlalchemy.ext.asyncio import AsyncEngine
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 
 
 def _create_db_engine() -> AsyncEngine:

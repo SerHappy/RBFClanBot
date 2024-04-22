@@ -1,10 +1,8 @@
-from .base import Base
-from sqlalchemy import Column
-from sqlalchemy import Integer
-from sqlalchemy import String
-from sqlalchemy import TIMESTAMP
+from sqlalchemy import TIMESTAMP, Column, Integer, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+
+from .base import Base
 
 
 class ApplicationStatus(Base):

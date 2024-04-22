@@ -1,11 +1,8 @@
-from .base import Base
-from sqlalchemy import BigInteger
-from sqlalchemy import Boolean
-from sqlalchemy import Column
-from sqlalchemy import String
-from sqlalchemy import TIMESTAMP
+from sqlalchemy import TIMESTAMP, BigInteger, Boolean, Column, String
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+
+from .base import Base
 
 
 class User(Base):

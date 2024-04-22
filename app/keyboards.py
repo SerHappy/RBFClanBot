@@ -1,9 +1,11 @@
 from config import Callbacks
-from telegram import InlineKeyboardButton
-from telegram import InlineKeyboardMarkup
-from telegram import KeyboardButton
-from telegram import ReplyKeyboardMarkup
-from telegram import ReplyKeyboardRemove
+from telegram import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    KeyboardButton,
+    ReplyKeyboardMarkup,
+    ReplyKeyboardRemove,
+)
 
 
 def ADMIN_DECISION_KEYBOARD(application_id: int) -> InlineKeyboardMarkup:

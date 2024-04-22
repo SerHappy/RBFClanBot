@@ -1,9 +1,9 @@
 from functools import wraps
+from typing import Callable
+
 from loguru import logger
 from telegram import Update
-from telegram.ext import ContextTypes
-from telegram.ext import ConversationHandler
-from typing import Callable
+from telegram.ext import ContextTypes, ConversationHandler
 
 
 def check_application_update(

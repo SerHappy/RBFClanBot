@@ -1,12 +1,10 @@
-from datetime import datetime
-from datetime import timedelta
-from db import Database
-from db import Session
+from datetime import datetime, timedelta
+
+import keyboards
+from db import Database, Session
 from loguru import logger
 from models.applications import Application
 from telegram import Chat
-
-import keyboards
 
 
 async def check_user_ability_to_fill_application(user_id: int, chat: Chat, session: Session) -> bool:

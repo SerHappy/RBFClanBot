@@ -1,17 +1,12 @@
-from . import preprocessing_checks
+import keyboards
 from config import ApplicationStates
-from db import Database
-from db import Session
+from db import Database, Session
 from decorators import updates
 from loguru import logger
-from telegram import Chat
-from telegram import constants
-from telegram import Message
-from telegram import User
-from telegram.ext import ContextTypes
-from telegram.ext import ConversationHandler
+from telegram import Chat, Message, User, constants
+from telegram.ext import ContextTypes, ConversationHandler
 
-import keyboards
+from . import preprocessing_checks
 
 
 @updates.check_application_update(return_error_state=ConversationHandler.END, return_full_user=True)

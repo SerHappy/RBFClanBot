@@ -1,7 +1,6 @@
 from decouple import config
 from loguru import logger
-from telegram import Bot
-from telegram import ChatInviteLink
+from telegram import Bot, ChatInviteLink
 
 
 async def generate_invite_link(bot: Bot) -> str:

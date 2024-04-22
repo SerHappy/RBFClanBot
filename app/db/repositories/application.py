@@ -1,10 +1,11 @@
-from .abstract import Repository
 from datetime import datetime
+
 from loguru import logger
 from models import Application
-from sqlalchemy import select
-from sqlalchemy import update
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from .abstract import Repository
 
 
 class ApplicationRepository(Repository[Application]):

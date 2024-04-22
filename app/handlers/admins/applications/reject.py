@@ -1,19 +1,12 @@
+import keyboards
 from config import DeclineUserStates
-from db import Database
-from db import Session
+from db import Database, Session
 from decorators import updates
 from decouple import config
 from loguru import logger
-from services import formatting_service
-from services import message_service
-from telegram import CallbackQuery
-from telegram import Chat
-from telegram import Message
-from telegram.ext import CallbackContext
-from telegram.ext import ContextTypes
-from telegram.ext import ConversationHandler
-
-import keyboards
+from services import formatting_service, message_service
+from telegram import CallbackQuery, Chat, Message
+from telegram.ext import CallbackContext, ContextTypes, ConversationHandler
 
 
 @updates.check_update_and_provide_data(need_callback=True)

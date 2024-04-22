@@ -1,17 +1,16 @@
-from .finish import user_decision
-from .questions import about
-from .questions import activity
-from .questions import age
-from .questions import game_mode
-from .questions import pubg_id
-from .start import start_command
 from config import ApplicationStates
 from handlers.empty import unknown_handler
-from telegram.ext import Application
-from telegram.ext import CommandHandler
-from telegram.ext import ConversationHandler
-from telegram.ext import filters
-from telegram.ext import MessageHandler
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    ConversationHandler,
+    MessageHandler,
+    filters,
+)
+
+from .finish import user_decision
+from .questions import about, activity, age, game_mode, pubg_id
+from .start import start_command
 
 
 def register_application_handlers(application: Application):

@@ -2,9 +2,7 @@ from handlers.admins import register_admin_handlers
 from handlers.application import register_application_handlers
 from handlers.chat import register_chat_handlers
 from handlers.empty import unknown_handler
-from telegram.ext import Application
-from telegram.ext import filters
-from telegram.ext import MessageHandler
+from telegram.ext import Application, MessageHandler, filters
 
 
 def add_all_handlers(application: Application):
