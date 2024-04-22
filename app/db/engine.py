@@ -1,17 +1,14 @@
 from core.config import settings
-from db.repositories import (
-    AdminProcessingApplicationRepository,
-    ApplicationAnswerRepository,
-    ApplicationRepository,
-    ApplicationStatusRepository,
-    UserRepository,
-)
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
+
+from .repositories import ApplicationRepository
+from .repositories.application_answer import ApplicationAnswerRepository
+from .repositories.user import UserRepository
 
 
 def _create_db_engine() -> AsyncEngine:
@@ -30,23 +27,26 @@ def _create_db_engine() -> AsyncEngine:
     )
 
 
-Session: async_sessionmaker = async_sessionmaker(_create_db_engine())
+session_factory: async_sessionmaker = async_sessionmaker(_create_db_engine())
 
 
-class Database:
-    """
-    Класс для работы с базой данных.
+class UnitOfWork:
+    def __init__(self) -> None:
+        self.session_factory = session_factory
 
-    Хранит репозитории для работы с пользователями, заявками, ответами, статусами заявок.
-    """
+    async def __aenter__(self) -> None:
+        self.session: AsyncSession = self.session_factory()
 
-    def __init__(self, session: AsyncSession) -> None:
-        """Инициализация репозиториев."""
-        self._session = session
-        self.user = UserRepository(session)
-        self.application = ApplicationRepository(session)
-        self.application_answer = ApplicationAnswerRepository(session)
-        self.application_status = ApplicationStatusRepository(session)
-        self.admin_processing_application = AdminProcessingApplicationRepository(
-            session
-        )
+        self.application = ApplicationRepository(self.session)
+        self.application_answer = ApplicationAnswerRepository(self.session)
+        self.user = UserRepository(self.session)
+
+    async def __aexit__(self, *args) -> None:
+        await self.rollback()
+        await self.session.close()
+
+    async def commit(self) -> None:
+        await self.session.commit()
+
+    async def rollback(self) -> None:
+        await self.session.rollback()

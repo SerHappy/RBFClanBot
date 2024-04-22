@@ -1,6 +1,7 @@
-from sqlalchemy import TEXT, TIMESTAMP, Column, ForeignKey, Integer
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
+from datetime import datetime
+
+from sqlalchemy import TIMESTAMP, ForeignKey, text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 
@@ -22,10 +23,17 @@ class ApplicationAnswer(Base):
 
     __tablename__ = "application_answers"
 
-    id = Column(Integer, primary_key=True)
-    application_id = Column(Integer, ForeignKey("applications.id", ondelete="CASCADE"))
-    question_number = Column(Integer)
-    answer_text = Column(TEXT)
-    created_at = Column(TIMESTAMP, server_default=func.now())
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    application_id: Mapped[int] = mapped_column(
+        ForeignKey("applications.id", ondelete="CASCADE")
+    )
+    question_number: Mapped[int]
+    answer_text: Mapped[str]
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True),
+        server_default=text("TIMEZONE('utc', NOW())"),
+    )
 
-    application = relationship("Application", back_populates="answers", cascade="all, delete")
+    application = relationship(
+        "Application", back_populates="answers", cascade="all, delete"
+    )

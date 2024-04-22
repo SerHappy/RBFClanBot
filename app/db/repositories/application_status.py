@@ -21,5 +21,5 @@ class ApplicationStatusRepository(Repository[ApplicationStatus]):
         Returns:
             Экземпляр ApplicationStatus (созданный).
         """
-        new_status = await self.session.merge(self.type_model(status=status))
+        new_status = await self.session.merge(self.model(status=status))
         return new_status

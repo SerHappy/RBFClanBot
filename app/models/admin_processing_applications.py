@@ -1,5 +1,5 @@
-from sqlalchemy import BigInteger, Column, ForeignKey, Integer
-from sqlalchemy.orm import relationship
+from sqlalchemy import BigInteger, ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 
@@ -9,9 +9,14 @@ class AdminProcessingApplication(Base):
 
     __tablename__ = "admin_processing_applications"
 
-    id = Column(Integer, primary_key=True)
-    admin_id = Column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"))
-    application_id = Column(Integer, ForeignKey("applications.id", ondelete="CASCADE"))
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    admin_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        type_=BigInteger,
+    )
+    application_id: Mapped[int] = mapped_column(
+        ForeignKey("applications.id", ondelete="CASCADE")
+    )
 
     admin = relationship("User", back_populates="admin_applications")
     application = relationship("Application", back_populates="admin_applications")

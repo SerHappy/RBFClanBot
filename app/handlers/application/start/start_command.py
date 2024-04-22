@@ -1,21 +1,22 @@
 import keyboards
 from config import ApplicationStates
-from db import Database, Session
+from db import UnitOfWork
 from decorators import updates
 from loguru import logger
+from services.application_service import ApplicationService
 from telegram import Chat, Message, User, constants
 from telegram.ext import ContextTypes, ConversationHandler
 
-from . import preprocessing_checks
 
-
-@updates.check_application_update(return_error_state=ConversationHandler.END, return_full_user=True)
+@updates.check_application_update(
+    return_error_state=ConversationHandler.END, return_full_user=True
+)
 async def start_command(
     user: User,
     chat: Chat,
     message: Message,
     context: ContextTypes.DEFAULT_TYPE,
-) -> ApplicationStates.pubgID_state:
+) -> int:
     """
     Входная точка для заполнения анкеты.
 
@@ -28,32 +29,28 @@ async def start_command(
     Returns:
         Переводит в состояние ApplicationStates.pubgID_state.
     """
-    # TODO: Вынести в декоратор
     chat_type = chat.type
     if chat_type != constants.ChatType.PRIVATE:
-        await chat.send_message("Эту команду можно вызывать только в личной беседе с ботом.")
+        await chat.send_message(
+            "Эту команду можно вызывать только в личной беседе с ботом."
+        )
         return ConversationHandler.END
 
     logger.info(f"Пользователь чата chat_id={chat.id} вызвал команду /start")
-    async with Session() as session:
-        logger.debug("Подключение к базе данных прошло успешно")
-        db = Database(session)
-        user_repo = db.user
-        application_repo = db.application
 
-        db_user = await user_repo.create_if_not_exists(user.id, user.username, user.first_name, user.last_name)
-        # TODO: Сохранять только статус
-        await application_repo.create_if_not_exists(db_user.id)
-
-        result = await preprocessing_checks.check_user_ability_to_fill_application(user.id, chat, session)
-
-        await session.commit()
-
-    if result is False:
-        logger.info(f"Пользователь chat_id={chat.id} не может заполнять анкету , выход из /start")
+    application_service = ApplicationService()
+    result = await application_service.is_user_available_to_fill_application(
+        uow=UnitOfWork(), user_id=user.id
+    )
+    if not result:
+        logger.info(
+            f"Пользователь chat_id={chat.id} не может заполнять анкету , выход из /start"
+        )
         return ConversationHandler.END
     context.user_data["application_completed"] = False  # type: ignore
-    logger.debug("Создана переменная application_completed, значение которой равно False")
+    logger.debug(
+        "Создана переменная application_completed, значение которой равно False"
+    )
     logger.info(
         f"Пользователь chat_id={chat.id} начинает заполнять анкету, переводим в состояние {ApplicationStates.pubgID_state}"
     )

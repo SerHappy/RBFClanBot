@@ -1,8 +1,8 @@
 from datetime import timedelta
 
 import keyboards
-from db import Database, Session
 from core.config import settings
+from db import Database, session_factory
 from loguru import logger
 from services import formatting_service
 from telegram import Bot
@@ -20,8 +20,10 @@ async def send_application_to_admins(bot: Bot, user_id: int) -> None:
         None
     """
     admin_chat = settings.ADMIN_CHAT_ID
-    logger.info(f"Отправка заявки пользователя user_id={user_id} админам в чат admin_chat_id={admin_chat}.")
-    async with Session() as session:
+    logger.info(
+        f"Отправка заявки пользователя user_id={user_id} админам в чат admin_chat_id={admin_chat}."
+    )
+    async with session_factory() as session:
         logger.debug("Подключение к базе данных прошло успешно")
         db = Database(session)
         application = await db.application.get_active_application(user_id)
@@ -48,16 +50,20 @@ async def send_admin_decision_to_user(application_id: int, bot: Bot) -> None:
         None
     """
     logger.info(f"Обработка решения админа application_id={application_id}")
-    async with Session() as session:
+    async with session_factory() as session:
         logger.debug("Подключение к базе данных прошло успешно")
         db = Database(session)
         application = await db.application.get(application_id)
         application_status = application.status_id
         if application_status == 3:
-            logger.debug(f"Заявка application_id={application_id} принята, уведомляем пользователя и отправляем инвайт")
+            logger.debug(
+                f"Заявка application_id={application_id} принята, уведомляем пользователя и отправляем инвайт"
+            )
             await bot.send_message(
                 chat_id=application.user_id,
-                text="Ваша заявка принята!\nВаша персональная ссылка: {}".format(application.invite_link),
+                text="Ваша заявка принята!\nВаша персональная ссылка: {}".format(
+                    application.invite_link
+                ),
             )
         elif application_status == 4:
             logger.debug(
@@ -67,7 +73,9 @@ async def send_admin_decision_to_user(application_id: int, bot: Bot) -> None:
                 chat_id=application.user_id,
                 text="Ваша заявка отклонена.\nПричина отказа: {}.\nПопробуйте снова {} (UTC+0).".format(
                     application.rejection_reason,
-                    (timedelta(days=30) + application.decision_date).strftime("%d.%m.%Y %H:%M"),
+                    (timedelta(days=30) + application.decision_date).strftime(
+                        "%d.%m.%Y %H:%M"
+                    ),
                 ),
             )
         await bot.send_message(

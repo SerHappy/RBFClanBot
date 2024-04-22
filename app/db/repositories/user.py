@@ -34,7 +34,7 @@ class UserRepository(Repository[User]):
         """
         logger.debug(f"Создание пользователя с id={id}")
         user = await self.session.merge(
-            self.type_model(
+            self.model(
                 id=id,
                 username=username,
                 first_name=first_name,
@@ -85,7 +85,9 @@ class UserRepository(Repository[User]):
         if not user:
             logger.error(f"Пользователь с id={user_id} не найден при попытке бане.")
             return
-        await self.session.execute(update(User).where(User.id == user_id).values(is_banned=True))
+        await self.session.execute(
+            update(User).where(User.id == user_id).values(is_banned=True)
+        )
         logger.info(f"Пользователь id={user_id} был забанен.")
 
     async def unban_user(self, user_id: int):
@@ -94,5 +96,7 @@ class UserRepository(Repository[User]):
         if not user:
             logger.error(f"Пользователь с id={user_id} не найден при попытке разбана.")
             return
-        await self.session.execute(update(User).where(User.id == user_id).values(is_banned=False))
+        await self.session.execute(
+            update(User).where(User.id == user_id).values(is_banned=False)
+        )
         logger.info(f"Пользователь id={user_id} был разбанен.")

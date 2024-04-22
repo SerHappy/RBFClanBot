@@ -1,7 +1,7 @@
 import keyboards
 from config import DeclineUserStates
 from core.config import settings
-from db import Database, Session
+from db import Database, session_factory
 from decorators import updates
 from loguru import logger
 from services import formatting_service, message_service
@@ -71,7 +71,7 @@ async def reject_reason_hander(
     await chat.send_message(
         "Причина отказа для Заявки №{}:\n{}.".format(application_id, message.text),
     )
-    async with Session() as session:
+    async with session_factory() as session:
         logger.debug("Подключение к базе данных прошло успешно")
         db: Database = Database(session)
         await db.application.reject_application(application_id, message.text)

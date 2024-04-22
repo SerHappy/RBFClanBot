@@ -1,5 +1,5 @@
 import keyboards
-from db import Database, Session
+from db import Database, session_factory
 from decorators import updates
 from loguru import logger
 from services import formatting_service
@@ -9,7 +9,9 @@ from telegram.ext import ContextTypes, ConversationHandler
 
 # TODO: Переименовать функцию
 @updates.check_update_and_provide_data(need_callback=True)
-async def take_application_handler(callback: CallbackQuery, chat: Chat, context: ContextTypes.DEFAULT_TYPE):
+async def take_application_handler(
+    callback: CallbackQuery, chat: Chat, context: ContextTypes.DEFAULT_TYPE
+):
     """
     Взятие заявки в обработку.
 
@@ -24,21 +26,28 @@ async def take_application_handler(callback: CallbackQuery, chat: Chat, context:
     admin_id = callback.from_user.id
     application_message = callback.message
     if not callback_data or not application_message:
-        logger.error("Получен некорректный callback или message при попытке вызова take_application.")
+        logger.error(
+            "Получен некорректный callback или message при попытке вызова take_application."
+        )
         return ConversationHandler.END
     application_id = int(callback_data.split(":")[-1])
     logger.info(f"Администратор {admin_id=} взял заявку {application_id=} в обработку.")
-    async with Session() as session:
+    async with session_factory() as session:
         logger.debug("Подключение к базе данных прошло успешно")
         db = Database(session)
         application = await db.application.get(application_id)
-        admin_processing_application = await db.admin_processing_application.get_admin_processing_application(admin_id)
+        admin_processing_application = (
+            await db.admin_processing_application.get_admin_processing_application(
+                admin_id
+            )
+        )
         if application.status_id != 2:
             logger.error(
                 f"Попытка взять в обработку заявку {application_id=} с неверным статусом {application.status_id=} "
             )
             await callback.answer(
-                text=f"Невозможно взять в обработку заявку со статусом {application.status_id=}", show_alert=True
+                text=f"Невозможно взять в обработку заявку со статусом {application.status_id=}",
+                show_alert=True,
             )
             return ConversationHandler.END
         if admin_processing_application:
@@ -67,5 +76,6 @@ async def take_application_handler(callback: CallbackQuery, chat: Chat, context:
         )
     context.user_data["application_message_id"] = application_message.message_id  # type: ignore
     await callback.answer(
-        text="Заявка взята в обработку! Зайдите в личные сообщения для дальнейшей работы.", show_alert=True
+        text="Заявка взята в обработку! Зайдите в личные сообщения для дальнейшей работы.",
+        show_alert=True,
     )

@@ -38,7 +38,7 @@ class ApplicationRepository(Repository[Application]):
         """
         logger.debug(f"Создание заявки для пользователя с id={user_id}")
         application = await self.session.merge(
-            self.type_model(
+            self.model(
                 user_id=user_id,
                 status_id=status_id,
                 decision_date=decision_date,
@@ -48,6 +48,16 @@ class ApplicationRepository(Repository[Application]):
         )
         logger.debug(f"Создана заявка для пользователя с id={user_id}")
         return application
+
+    async def get_user_application(self, user_id: int) -> Application | None:
+        stmt = (
+            select(Application)
+            .where(Application.user_id == user_id)
+            .order_by(Application.decision_date.desc())
+            .limit(1)
+        )
+        res = (await self.session.execute(stmt)).scalar_one_or_none()
+        return res
 
     async def get_active_application(self, user_id: int) -> Application | None:
         """Получить активную заявку пользователя.
@@ -82,7 +92,9 @@ class ApplicationRepository(Repository[Application]):
         Returns:
             Заявка пользователя Application.
         """
-        logger.debug(f"Создание или получение активной заявки пользователя с id={user_id}")
+        logger.debug(
+            f"Создание или получение активной заявки пользователя с id={user_id}"
+        )
         application = await self.get_active_application(user_id)
         if application is None:
             logger.debug(f"Заявка пользователя с id={user_id} не существует, создаем")
@@ -100,10 +112,18 @@ class ApplicationRepository(Repository[Application]):
         Returns:
             None
         """
-        logger.debug(f"Смена статуса заявки application_id={application_id} на status_id={status_id}")
-        statement = update(Application).where(Application.id == application_id).values(status_id=status_id)
+        logger.debug(
+            f"Смена статуса заявки application_id={application_id} на status_id={status_id}"
+        )
+        statement = (
+            update(Application)
+            .where(Application.id == application_id)
+            .values(status_id=status_id)
+        )
         await self.session.execute(statement)
-        logger.debug(f"Статус заявки application_id={application_id} изменен на status_id={status_id}")
+        logger.debug(
+            f"Статус заявки application_id={application_id} изменен на status_id={status_id}"
+        )
 
     async def approve_application(self, application_id: int, invite_link: str) -> None:
         """
@@ -130,7 +150,9 @@ class ApplicationRepository(Repository[Application]):
         await self.session.execute(statement)
         logger.debug(f"Заявка application_id={application_id} принята")
 
-    async def reject_application(self, application_id: int, rejection_reason: str) -> None:
+    async def reject_application(
+        self, application_id: int, rejection_reason: str
+    ) -> None:
         """
         Отклонение заявки.
 

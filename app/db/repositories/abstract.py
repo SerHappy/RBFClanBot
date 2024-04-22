@@ -5,23 +5,23 @@ from models import Base
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-AbstractModel = TypeVar("AbstractModel")
+AbstractModel = TypeVar("AbstractModel", bound=Base)
 
 
 class Repository(Generic[AbstractModel]):
     """Abstract repository."""
 
-    type_model: Type[Base]
+    model: Type[AbstractModel]
     session: AsyncSession
 
-    def __init__(self, type_model: Type[Base], session: AsyncSession) -> None:
+    def __init__(self, type_model: Type[AbstractModel], session: AsyncSession) -> None:
         """Initialize repository.
 
         Args:
             type_model: Model.
             session: Session.
         """
-        self.type_model = type_model
+        self.model = type_model
         self.session = session
 
     async def get(self, pk: int | str) -> AbstractModel | None:
@@ -33,7 +33,7 @@ class Repository(Generic[AbstractModel]):
         Returns:
             Model.
         """
-        return await self.session.get(self.type_model, ident=pk)
+        return await self.session.get(self.model, ident=pk)
 
     async def get_by_where(self, where_clause: Any) -> AbstractModel | None:
         """Get one model by where clause.
@@ -44,10 +44,12 @@ class Repository(Generic[AbstractModel]):
         Returns:
             Model or None.
         """
-        statement = select(self.type_model).where(where_clause)
+        statement = select(self.model).where(where_clause)
         return (await self.session.execute(statement)).one_or_none()  # type: ignore
 
-    async def get_many(self, where_clause: Any, limit: int = 100, order_by: Any = None) -> list[AbstractModel]:
+    async def get_many(
+        self, where_clause: Any, limit: int = 100, order_by: Any = None
+    ) -> list[AbstractModel]:
         """Get many models by where clause.
 
         Args:
@@ -56,7 +58,7 @@ class Repository(Generic[AbstractModel]):
         Returns:
             Models.
         """
-        statement = select(self.type_model).where(where_clause).limit(limit)
+        statement = select(self.model).where(where_clause).limit(limit)
         if order_by:
             statement = statement.order_by(order_by)
         return (await self.session.execute(statement)).all()  # type: ignore
@@ -67,7 +69,7 @@ class Repository(Generic[AbstractModel]):
         Args:
             model: Model.
         """
-        statement = delete(self.type_model).where(where_clause)
+        statement = delete(self.model).where(where_clause)
         await self.session.execute(statement)
 
     @abc.abstractmethod

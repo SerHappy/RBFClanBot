@@ -1,6 +1,6 @@
 import keyboards
 from config import ApplicationStates
-from db import Database, Session
+from db import Database, session_factory
 from loguru import logger
 from telegram import (
     Chat,
@@ -37,16 +37,27 @@ async def process_application_answer(
     Returns:
         Новое состояние.
     """
-    logger.debug(f"Обработка ответа на вопрос question_number={question_number} для пользователя user={user_id}")
-    if await _is_new_answer(user_id, question_number) is False and context.user_data["application_completed"] is True:  # type: ignore
-        logger.debug(f"Пользователь user={user_id} уже отвечал на вопрос question_number={question_number}, обновляем")
+    logger.debug(
+        f"Обработка ответа на вопрос question_number={question_number} для пользователя user={user_id}"
+    )
+    if (
+        await _is_new_answer(user_id, question_number) is False
+        and context.user_data["application_completed"] is True
+    ):  # type: ignore
+        logger.debug(
+            f"Пользователь user={user_id} уже отвечал на вопрос question_number={question_number}, обновляем"
+        )
         await _update_answer(user_id, question_number, message.text)
         logger.debug(f"Показываем овервью анкеты для пользователя user={user_id}")
         return await show_overview(chat)
-    logger.debug(f"Пользователь user={user_id} еще не отвечал на вопрос question_number={question_number}, сохраняем")
+    logger.debug(
+        f"Пользователь user={user_id} еще не отвечал на вопрос question_number={question_number}, сохраняем"
+    )
     await _save_answer(user_id, question_number, message.text)
     await ask_next_question(chat, next_message, keyboard)
-    logger.debug(f"Возвращаем следующее состояние next_state={next_state} для пользователя user={user_id}")
+    logger.debug(
+        f"Возвращаем следующее состояние next_state={next_state} для пользователя user={user_id}"
+    )
     return next_state
 
 
@@ -61,11 +72,13 @@ async def show_overview(chat: Chat) -> ApplicationStates.change_or_accept_state:
         Новое состояние ApplicationStates.change_or_accept_state.
     """
     logger.info(f"Показать обзор заявки для chat_id={chat.id}")
-    async with Session() as session:
+    async with session_factory() as session:
         logger.debug("Подключение к базе данных прошло успешно")
         db = Database(session)
         application = await db.application.get_active_application(user_id=chat.id)
-        answers = await db.application_answer.get_all_answers_by_application_id(application.id)
+        answers = await db.application_answer.get_all_answers_by_application_id(
+            application.id
+        )
     await chat.send_message(
         f"Твоя заявка:\n\n1) PUBG ID: {answers[0].answer_text}\n2) Возраст: {answers[1].answer_text}\n3) Режимы игры: {answers[2].answer_text}\n4) Активность: {answers[3].answer_text}\n5) О себе: {answers[4].answer_text}\n\nВсе верно?",
         reply_markup=keyboards.REMOVE_KEYBOARD,
@@ -94,17 +107,23 @@ async def _is_new_answer(user_id: int, question_number: int) -> bool:
     logger.debug(
         f"Проверка на новый ответ для пользователя user={user_id} для вопроса question_number={question_number}"
     )
-    async with Session() as session:
+    async with session_factory() as session:
         logger.debug("Подключение к базе данных прошло успешно")
         db = Database(session)
         user_application = await db.application.get_active_application(user_id)
-        user_answer = await db.application_answer.get_application_answer_text_by_question_number(
-            user_application.id, question_number
+        user_answer = (
+            await db.application_answer.get_application_answer_text_by_question_number(
+                user_application.id, question_number
+            )
         )
         if user_answer is not None:
-            logger.debug(f"Пользователь user={user_id} уже отвечал на вопрос question_number={question_number}")
+            logger.debug(
+                f"Пользователь user={user_id} уже отвечал на вопрос question_number={question_number}"
+            )
             return False
-        logger.debug(f"Пользователь user={user_id} еще не отвечал на вопрос question_number={question_number}")
+        logger.debug(
+            f"Пользователь user={user_id} еще не отвечал на вопрос question_number={question_number}"
+        )
         return True
 
 
@@ -123,7 +142,7 @@ async def _save_answer(user_id: int, question_number: int, answer: str | None) -
     logger.info(
         f"Сохранение ответа answer={answer} для пользователя user_id={user_id} для вопроса question_number={question_number}"
     )
-    async with Session() as session:
+    async with session_factory() as session:
         logger.debug("Подключение к базе данных прошло успешно")
         db = Database(session)
         user_application = await db.application.get_active_application(user_id)
@@ -134,7 +153,9 @@ async def _save_answer(user_id: int, question_number: int, answer: str | None) -
         await session.commit()
 
 
-async def _update_answer(user_id: int, question_number: int, answer: str | None) -> None:
+async def _update_answer(
+    user_id: int, question_number: int, answer: str | None
+) -> None:
     """
     Обновление ответа на вопрос.
 
@@ -149,11 +170,13 @@ async def _update_answer(user_id: int, question_number: int, answer: str | None)
     logger.debug(
         f"Обновление ответа answer={answer} для пользователя user_id={user_id} для вопроса question_number={question_number}"
     )
-    async with Session() as session:
+    async with session_factory() as session:
         logger.debug("Подключение к базе данных прошло успешно")
         db = Database(session)
         user_application = await db.application.get_active_application(user_id)
-        await db.application_answer.update_question_answer(user_application.id, question_number, answer)
+        await db.application_answer.update_question_answer(
+            user_application.id, question_number, answer
+        )
         logger.debug(
             f"Ответ пользователя user_id={user_id} для вопроса question_number={question_number} анкеты application_id={user_application.id} обновлен на answer={answer}"
         )
@@ -176,7 +199,9 @@ async def ask_next_question(
     Returns:
         None
     """
-    logger.debug(f"Отправляем следующий вопрос question_message={next_message} в чат chat_id={chat.id}")
+    logger.debug(
+        f"Отправляем следующий вопрос question_message={next_message} в чат chat_id={chat.id}"
+    )
     await chat.send_message(
         text=next_message,
         reply_markup=keyboard,
@@ -194,10 +219,12 @@ async def change_application_status_to_waiting(user_id: int) -> None:
         None
     """
     logger.debug(f"Изменяем статус заявки на ожидание для пользователя user={user_id}")
-    async with Session() as session:
+    async with session_factory() as session:
         logger.debug("Подключение к базе данных прошло успешно")
         db = Database(session)
         user_application = await db.application.get_active_application(user_id)
         await db.application.change_status(user_application.id, 2)
         await session.commit()
-        logger.debug(f"Статус заявки для пользователя user={user_id} изменен на ожидание")
+        logger.debug(
+            f"Статус заявки для пользователя user={user_id} изменен на ожидание"
+        )

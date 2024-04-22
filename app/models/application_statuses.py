@@ -1,6 +1,7 @@
-from sqlalchemy import TIMESTAMP, Column, Integer, String
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
+from datetime import datetime
+
+from sqlalchemy import TIMESTAMP, String, text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 
@@ -19,8 +20,11 @@ class ApplicationStatus(Base):
 
     __tablename__ = "application_statuses"
 
-    id = Column(Integer, primary_key=True)
-    status = Column(String(266))
-    created_at = Column(TIMESTAMP, server_default=func.now())
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    status: Mapped[str] = mapped_column(String(255))
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True),
+        server_default=text("TIMEZONE('utc', NOW())"),
+    )
 
     applications = relationship("Application", back_populates="status")

@@ -1,14 +1,14 @@
 from datetime import datetime, timedelta
 
 import keyboards
-from db import Database, Session
+from db import Database, session_factory
 from loguru import logger
 from models.applications import Application
 from telegram import Chat
 
 
 async def check_user_ability_to_fill_application(
-    user_id: int, chat: Chat, session: Session
+    user_id: int, chat: Chat, session: session_factory
 ) -> bool:
     """Проверка возможности заполнения анкеты."""
     if await is_user_able_to_start(user_id, chat, session):
@@ -16,7 +16,9 @@ async def check_user_ability_to_fill_application(
     return False
 
 
-async def is_user_able_to_start(user_id: int, chat: Chat, session: Session) -> bool:
+async def is_user_able_to_start(
+    user_id: int, chat: Chat, session: session_factory
+) -> bool:
     """Проверка забанен ли пользователь."""
     db = Database(session)
     if await db.user.is_user_banned(user_id):
@@ -31,7 +33,9 @@ async def is_user_able_to_start(user_id: int, chat: Chat, session: Session) -> b
     return True
 
 
-async def _check_application_status(user_id: int, chat: Chat, session: Session) -> bool:
+async def _check_application_status(
+    user_id: int, chat: Chat, session: session_factory
+) -> bool:
     """
     Проверка статуса заявки.
 

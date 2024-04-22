@@ -1,6 +1,7 @@
-from sqlalchemy import TEXT, TIMESTAMP, BigInteger, Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
+from datetime import datetime
+
+from sqlalchemy import TIMESTAMP, BigInteger, ForeignKey, String, text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 
@@ -23,15 +24,26 @@ class Application(Base):
 
     __tablename__ = "applications"
 
-    id = Column(Integer, primary_key=True)
-    user_id = Column(BigInteger, ForeignKey("users.id", ondelete="CASCADE"))
-    status_id = Column(Integer, ForeignKey("application_statuses.id", ondelete="CASCADE"), default=1)
-    decision_date = Column(TIMESTAMP)
-    rejection_reason = Column(TEXT)
-    invite_link = Column(String(255))
-    created_at = Column(TIMESTAMP, server_default=func.now())
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        type_=BigInteger,
+    )
+    status_id: Mapped[int] = mapped_column(
+        ForeignKey("application_statuses.id", ondelete="CASCADE"),
+        default=1,
+    )
+    decision_date: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True))
+    rejection_reason: Mapped[str]
+    invite_link: Mapped[str] = mapped_column(String(255))
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True),
+        server_default=text("TIMEZONE('utc', NOW())"),
+    )
 
     user = relationship("User", back_populates="applications")
     status = relationship("ApplicationStatus", back_populates="applications")
     answers = relationship("ApplicationAnswer", back_populates="application")
-    admin_applications = relationship("AdminProcessingApplication", back_populates="application")
+    admin_applications = relationship(
+        "AdminProcessingApplication", back_populates="application"
+    )

@@ -1,5 +1,5 @@
 from core.config import settings
-from db import Database, Session
+from db import Database, session_factory
 from loguru import logger
 from telegram import Chat, Update
 from telegram.ext import ContextTypes, ConversationHandler
@@ -26,7 +26,7 @@ async def ban_user_preprocess(update: Update, context: ContextTypes.DEFAULT_TYPE
 
 # TODO: Вынести в сервис пользователя
 async def _ban_user(chat: Chat, user_id: int) -> None:
-    async with Session() as session:
+    async with session_factory() as session:
         db = Database(session)
         if not await db.user.get(user_id):
             await chat.send_message(f"Пользователь с ID {user_id} не существует.")

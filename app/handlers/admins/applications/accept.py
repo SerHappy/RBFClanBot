@@ -1,5 +1,5 @@
 from core.config import settings
-from db import Database, Session
+from db import Database, session_factory
 from decorators import updates
 from loguru import logger
 from services import formatting_service, link_service, message_service
@@ -29,7 +29,7 @@ async def accept_application(
     application_id = int(callback.data.split(":")[-1])
     logger.info(f"Принятие заявки application_id={application_id}.")
     admin_id = callback.from_user.id
-    async with Session() as session:
+    async with session_factory() as session:
         logger.debug("Подключение к базе данных прошло успешно")
         db: Database = Database(session)
         link = await link_service.generate_invite_link(context.application.bot)

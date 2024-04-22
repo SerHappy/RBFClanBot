@@ -35,13 +35,15 @@ class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
             f"Создание ответа на заявку для application_id={application_id} и question_number={question_number} с текстом text={answer_text}"
         )
         answer = await self.session.merge(
-            self.type_model(
+            self.model(
                 application_id=application_id,
                 question_number=question_number,
                 answer_text=answer_text,
             )
         )
-        logger.debug(f"Создан ответ на заявку для application_id={application_id} и question_number={question_number}")
+        logger.debug(
+            f"Создан ответ на заявку для application_id={application_id} и question_number={question_number}"
+        )
         return answer
 
     async def get_application_answer_text_by_question_number(
@@ -59,7 +61,9 @@ class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
         Returns:
             Текст ответа или None.
         """
-        logger.debug(f"Получение текста ответа для application_id={application_id} и question_number={question_number}")
+        logger.debug(
+            f"Получение текста ответа для application_id={application_id} и question_number={question_number}"
+        )
         statement = (
             select(ApplicationAnswer)
             .where(ApplicationAnswer.application_id == application_id)
@@ -68,7 +72,9 @@ class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
 
         answer = (await self.session.execute(statement)).scalar()
         if answer is None:
-            logger.debug(f"Не найден ответ для application_id={application_id} и question_number={question_number}")
+            logger.debug(
+                f"Не найден ответ для application_id={application_id} и question_number={question_number}"
+            )
             return None
         logger.debug(
             f"Найден ответ для application_id={application_id} и question_number={question_number}, возвращаем текст"
@@ -98,7 +104,9 @@ class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
         logger.debug(f"Получены все ответы для application_id={application_id}")
         return answers
 
-    async def update_question_answer(self, application_id: int, question_number: int, answer_text: str) -> None:
+    async def update_question_answer(
+        self, application_id: int, question_number: int, answer_text: str
+    ) -> None:
         """Обновление ответа на вопрос.
 
         Args:
@@ -134,6 +142,8 @@ class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
             None
         """
         logger.debug(f"Удаление всех ответов для application_id={application_id}")
-        statement = delete(ApplicationAnswer).where(ApplicationAnswer.application_id == application_id)
+        statement = delete(ApplicationAnswer).where(
+            ApplicationAnswer.application_id == application_id
+        )
         await self.session.execute(statement)
         logger.debug(f"Удалены все ответы для application_id={application_id}")

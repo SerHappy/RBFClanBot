@@ -1,6 +1,7 @@
-from sqlalchemy import TIMESTAMP, BigInteger, Boolean, Column, String
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
+from datetime import datetime
+
+from sqlalchemy import TIMESTAMP, String, text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 
@@ -22,12 +23,15 @@ class User(Base):
 
     __tablename__ = "users"
 
-    id = Column(BigInteger, primary_key=True, autoincrement=False)
-    username = Column(String(255))
-    first_name = Column(String(64))
-    last_name = Column(String(64))
-    is_banned = Column(Boolean, default=False, nullable=False)
-    created_at = Column(TIMESTAMP, server_default=func.now())
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    username: Mapped[str] = mapped_column(String(255))
+    first_name: Mapped[str] = mapped_column(String(64))
+    last_name: Mapped[str] = mapped_column(String(64))
+    is_banned: Mapped[bool] = mapped_column(default=False, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        TIMESTAMP(timezone=True),
+        server_default=text("TIMEZONE('utc', NOW())"),
+    )
 
     applications = relationship(
         "Application",

@@ -1,9 +1,11 @@
-from db import Database, Session
+from db import Database, session_factory
 from loguru import logger
 from models import Application
 
 
-async def format_application(application_id: Application, session: Session) -> str:
+async def format_application(
+    application_id: Application, session: session_factory
+) -> str:
     """
     Возвращает текстовое представление заявки для админов.
 
@@ -18,7 +20,9 @@ async def format_application(application_id: Application, session: Session) -> s
     db = Database(session)
     application = await db.application.get(application_id)
     user = await db.user.get(application.user_id)
-    answers = await db.application_answer.get_all_answers_by_application_id(application.id)
+    answers = await db.application_answer.get_all_answers_by_application_id(
+        application.id
+    )
     status = await db.application_status.get(application.status_id)
     status_name_escaped = _escape_markdown(status.status)
     answers_escaped = [_escape_markdown(answer.answer_text) for answer in answers]
@@ -53,7 +57,9 @@ def _escape_markdown(text: str) -> str:
     """
     logger.debug(f"Экранирование символов в тексте text={text} для MarkdownV2")
     escape_chars = "_*[]()~`>#+-=|{}.!"
-    escaped_text = "".join(f"\\{char}" if char in escape_chars else char for char in text)
+    escaped_text = "".join(
+        f"\\{char}" if char in escape_chars else char for char in text
+    )
     logger.debug(
         f"Экранирование символов в тексте text={text} для MarkdownV2 прошло успешно, новый text={escaped_text}"
     )
