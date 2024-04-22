@@ -1,3 +1,4 @@
+from core.config import settings
 from db.repositories import (
     AdminProcessingApplicationRepository,
     ApplicationAnswerRepository,
@@ -5,7 +6,6 @@ from db.repositories import (
     ApplicationStatusRepository,
     UserRepository,
 )
-from decouple import config
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
@@ -24,7 +24,10 @@ def _create_db_engine() -> AsyncEngine:
     Returns:
         AsyncEngine: Подключение к базе данных.
     """
-    return create_async_engine(config("DATABASE_URL"), echo=config("ECHO_DB", cast=bool, default=False))
+    return create_async_engine(
+        str(settings.SQLALCHEMY_DATABASE_URI),
+        echo=settings.SQLALCHEMY_ECHO,
+    )
 
 
 Session: async_sessionmaker = async_sessionmaker(_create_db_engine())
@@ -44,4 +47,6 @@ class Database:
         self.application = ApplicationRepository(session)
         self.application_answer = ApplicationAnswerRepository(session)
         self.application_status = ApplicationStatusRepository(session)
-        self.admin_processing_application = AdminProcessingApplicationRepository(session)
+        self.admin_processing_application = AdminProcessingApplicationRepository(
+            session
+        )

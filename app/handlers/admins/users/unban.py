@@ -1,5 +1,5 @@
+from core.config import settings
 from db import Database, Session
-from decouple import config
 from loguru import logger
 from telegram import Chat, Update
 from telegram.ext import ContextTypes, ConversationHandler
@@ -10,9 +10,11 @@ async def unban_user_preprocess(update: Update, context: ContextTypes.DEFAULT_TY
     """Обработчик команды бана пользователя."""
     chat = update.effective_chat
     if not update.message or not update.message.text or not chat:
-        logger.error("Получен некорректный update при попытке вызова обработчика анбана пользователя.")
+        logger.error(
+            "Получен некорректный update при попытке вызова обработчика анбана пользователя."
+        )
         return ConversationHandler.END
-    if chat.id != config("ADMIN_CHAT_ID", cast=int):
+    if chat.id != settings.ADMIN_CHAT_ID:
         logger.warning("Вызов команды разбана пользователя не в чате администратора.")
         return ConversationHandler.END
     user_id = update.message.text.split()[1]

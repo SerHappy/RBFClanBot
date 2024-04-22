@@ -3,7 +3,7 @@ from pathlib import Path
 
 import handlers
 import uvloop
-from decouple import config
+from core.config import settings
 from loguru import logger
 from telegram.ext import Application, ApplicationBuilder
 
@@ -53,10 +53,7 @@ async def post_init(application: Application):
 def _start_bot() -> None:
     """Запуск бота."""
     application: Application = (
-        ApplicationBuilder()
-        .token(config("BOT_TOKEN", cast=str))
-        .post_init(post_init)
-        .build()
+        ApplicationBuilder().token(settings.BOT_TOKEN).post_init(post_init).build()
     )
     logger.debug("Создание приложения прошло успешно.")
     handlers.add_all_handlers(application)

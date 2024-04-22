@@ -2,7 +2,7 @@ from datetime import timedelta
 
 import keyboards
 from db import Database, Session
-from decouple import config
+from core.config import settings
 from loguru import logger
 from services import formatting_service
 from telegram import Bot
@@ -19,7 +19,7 @@ async def send_application_to_admins(bot: Bot, user_id: int) -> None:
     Returns:
         None
     """
-    admin_chat = config("ADMIN_CHAT_ID", cast=int)
+    admin_chat = settings.ADMIN_CHAT_ID
     logger.info(f"Отправка заявки пользователя user_id={user_id} админам в чат admin_chat_id={admin_chat}.")
     async with Session() as session:
         logger.debug("Подключение к базе данных прошло успешно")

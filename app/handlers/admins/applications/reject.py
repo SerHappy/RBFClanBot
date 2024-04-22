@@ -1,8 +1,8 @@
 import keyboards
 from config import DeclineUserStates
+from core.config import settings
 from db import Database, Session
 from decorators import updates
-from decouple import config
 from loguru import logger
 from services import formatting_service, message_service
 from telegram import CallbackQuery, Chat, Message
@@ -10,7 +10,9 @@ from telegram.ext import CallbackContext, ContextTypes, ConversationHandler
 
 
 @updates.check_update_and_provide_data(need_callback=True)
-async def reject_application_start(callback: CallbackQuery, chat: Chat, context: CallbackContext) -> int:
+async def reject_application_start(
+    callback: CallbackQuery, chat: Chat, context: CallbackContext
+) -> int:
     """
     Обработчик коллбека отклонения заявки.
 
@@ -22,7 +24,9 @@ async def reject_application_start(callback: CallbackQuery, chat: Chat, context:
         Следующее состояние или ConversationHandler.END
     """
     if not callback.data:
-        logger.error("Получен некорректный callback при попытке вызова accept_application.")
+        logger.error(
+            "Получен некорректный callback при попытке вызова accept_application."
+        )
         return ConversationHandler.END
     context.user_data["message"] = callback.message  # type: ignore
     logger.debug(f"Сохранение переменной message={callback.message}.")
@@ -32,12 +36,16 @@ async def reject_application_start(callback: CallbackQuery, chat: Chat, context:
     logger.debug(f"Сохранение переменной application_id={application_id}.")
     await callback.edit_message_reply_markup(keyboards.ADMIN_DECLINE_BACK_KEYBOARD)
     logger.debug("Клавиатура обновлена.")
-    await chat.send_message("Напишите причину отказа для Заявки №{}".format(application_id))
+    await chat.send_message(
+        "Напишите причину отказа для Заявки №{}".format(application_id)
+    )
     return DeclineUserStates.decline_reason_state
 
 
 @updates.check_update_and_provide_data(need_message=True)
-async def reject_reason_hander(message: Message, chat: Chat, context: ContextTypes.DEFAULT_TYPE) -> int:
+async def reject_reason_hander(
+    message: Message, chat: Chat, context: ContextTypes.DEFAULT_TYPE
+) -> int:
     """
     Обработчик причины отказа.
 
@@ -55,7 +63,9 @@ async def reject_reason_hander(message: Message, chat: Chat, context: ContextTyp
     application_id = context.user_data["application_id"]  # type: ignore
     admin = message.from_user
     if not admin:
-        logger.error("Получен некорректный admin при попытке вызова reject_reason_hander.")
+        logger.error(
+            "Получен некорректный admin при попытке вызова reject_reason_hander."
+        )
         return ConversationHandler.END
     logger.info(f"Получение причины отказа application_id={application_id}.")
     await chat.send_message(
@@ -70,10 +80,14 @@ async def reject_reason_hander(message: Message, chat: Chat, context: ContextTyp
         await session.commit()
     bot = context.application.bot
     message: Message = context.user_data["message"]  # type: ignore
-    await message.edit_text(text=new_text, reply_markup=keyboards.REMOVE_INLINE_KEYBOARD, parse_mode="MarkdownV2")
+    await message.edit_text(
+        text=new_text,
+        reply_markup=keyboards.REMOVE_INLINE_KEYBOARD,
+        parse_mode="MarkdownV2",
+    )
     await context.application.bot.edit_message_text(
         new_text,
-        chat_id=config("ADMIN_CHAT_ID"),
+        chat_id=settings.ADMIN_CHAT_ID,
         message_id=context.user_data["application_message_id"],  # type: ignore
         parse_mode="MarkdownV2",
     )
@@ -84,7 +98,9 @@ async def reject_reason_hander(message: Message, chat: Chat, context: ContextTyp
 
 
 @updates.check_update_and_provide_data(need_callback=True)
-async def reject_back_button_handler(callback: CallbackQuery, chat: Chat, context: CallbackContext) -> int:
+async def reject_back_button_handler(
+    callback: CallbackQuery, chat: Chat, context: CallbackContext
+) -> int:
     """
     Обработчик кнопки Назад в чате админов.
 
@@ -99,5 +115,7 @@ async def reject_back_button_handler(callback: CallbackQuery, chat: Chat, contex
     logger.info("Возврат к выбору действий для Заявки.")
     application_id = context.user_data["application_id"]  # type: ignore
     logger.debug("Возврат к выбору действий для Заявки №{}".format(application_id))
-    await callback.edit_message_reply_markup(keyboards.ADMIN_DECISION_KEYBOARD(application_id))
+    await callback.edit_message_reply_markup(
+        keyboards.ADMIN_DECISION_KEYBOARD(application_id)
+    )
     return ConversationHandler.END

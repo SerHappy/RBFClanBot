@@ -1,6 +1,6 @@
+from core.config import settings
 from db import Database, Session
 from decorators import updates
-from decouple import config
 from loguru import logger
 from services import formatting_service, link_service, message_service
 from telegram import CallbackQuery, Chat
@@ -8,7 +8,9 @@ from telegram.ext import ContextTypes
 
 
 @updates.check_update_and_provide_data(need_callback=True)
-async def accept_application(callback: CallbackQuery, chat: Chat, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def accept_application(
+    callback: CallbackQuery, chat: Chat, context: ContextTypes.DEFAULT_TYPE
+) -> None:
     """
     Обработчик коллбека принятия заявки.
 
@@ -20,7 +22,9 @@ async def accept_application(callback: CallbackQuery, chat: Chat, context: Conte
         None
     """
     if not callback.data:
-        logger.error("Получен некорректный callback при попытке вызова accept_application.")
+        logger.error(
+            "Получен некорректный callback при попытке вызова accept_application."
+        )
         return
     application_id = int(callback.data.split(":")[-1])
     logger.info(f"Принятие заявки application_id={application_id}.")
@@ -38,7 +42,7 @@ async def accept_application(callback: CallbackQuery, chat: Chat, context: Conte
     await message_service.send_admin_decision_to_user(application_id, bot)
     await context.application.bot.edit_message_text(
         new_text,
-        chat_id=config("ADMIN_CHAT_ID"),
+        chat_id=settings.ADMIN_CHAT_ID,
         message_id=context.user_data["application_message_id"],  # type: ignore
         parse_mode="MarkdownV2",
     )
