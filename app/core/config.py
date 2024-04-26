@@ -4,6 +4,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    """Base settings for the application."""
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -17,9 +19,10 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
 
-    @computed_field  # type: ignore[misc]
+    @computed_field
     @property
-    def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:
+    def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:  # noqa: N802
+        """Create a SQLAlchemy database URI."""
         return MultiHostUrl.build(
             scheme="postgresql+asyncpg",
             username=self.POSTGRES_USER,
@@ -35,4 +38,4 @@ class Settings(BaseSettings):
     CLAN_CHAT_ID: int
 
 
-settings = Settings()  # type: ignore
+settings = Settings()  # type: ignore[reportCallIssue]

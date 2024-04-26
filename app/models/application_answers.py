@@ -7,8 +7,7 @@ from .base import Base
 
 
 class ApplicationAnswer(Base):
-    """
-    Модель ответов на вопросы.
+    """Модель ответов на вопросы.
 
     Название таблицы: application_answers
 
@@ -25,7 +24,7 @@ class ApplicationAnswer(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     application_id: Mapped[int] = mapped_column(
-        ForeignKey("applications.id", ondelete="CASCADE")
+        ForeignKey("applications.id", ondelete="CASCADE"),
     )
     question_number: Mapped[int]
     answer_text: Mapped[str]
@@ -35,5 +34,7 @@ class ApplicationAnswer(Base):
     )
 
     application = relationship(
-        "Application", back_populates="answers", cascade="all, delete"
+        "Application",
+        back_populates="answers",
+        cascade="all, delete",
     )

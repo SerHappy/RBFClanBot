@@ -1,75 +1,67 @@
 from loguru import logger
-from models import User
-from sqlalchemy import update
+from models import User as UserModel
+from sqlalchemy import insert, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domain.user.dto import UserDTO
+from app.domain.user.entities import User as UserEntity
+from app.domain.user.exceptions import UserAlreadyExistsError
 
 from .abstract import Repository
 
 
-class UserRepository(Repository[User]):
+class UserRepository(Repository[UserModel]):
     """Репозиторий для работы с пользователями."""
 
     def __init__(self, session: AsyncSession) -> None:
         """Инициализация репозитория."""
-        super().__init__(type_model=User, session=session)
+        super().__init__(type_model=UserModel, session=session)
 
-    async def create(
-        self,
-        id: int,
-        username: str | None = None,
-        first_name: str | None = None,
-        last_name: str | None = None,
-        is_banned: bool = False,
-    ) -> User:
+    async def create(self, user: UserEntity) -> UserEntity:
         """Создание пользователя.
 
         Args:
-            id: идентификатор пользователя.
-            username: никнейм пользователя (Optional).
-            first_name: Имя (Optional).
-            last_name: Фамилия (Optional).
+        ----
+            user: Пользователь.
 
         Returns:
+        -------
             Экземпляр User (созданный).
+
         """
-        logger.debug(f"Создание пользователя с id={id}")
-        user = await self.session.merge(
-            self.model(
-                id=id,
-                username=username,
-                first_name=first_name,
-                last_name=last_name,
-                is_banned=is_banned,
-            )
+        logger.debug(f"Создание пользователя с id={user.id}")
+        query = insert(self.model).values(
+            id=user.id,
+            username=user.username,
+            first_name=user.first_name,
+            last_name=user.last_name,
+            is_banned=user.is_banned,
         )
-        logger.debug(f"Создан пользователь с id={id}")
+        try:
+            await self.session.execute(query)
+        except IntegrityError as e:
+            raise UserAlreadyExistsError from e
+        logger.debug(f"Создан пользователь с id={user.id}")
         return user
 
-    async def create_if_not_exists(
-        self,
-        id: int,
-        username: str | None = None,
-        first_name: str | None = None,
-        last_name: str | None = None,
-        is_banned: bool = False,
-    ) -> User:
-        """Создание пользователя в случае его отсутствия.
+    async def get_by_id(self, user_id: int) -> UserEntity | None:
+        """Get user by id."""
+        stmt = select(self.model).filter_by(id=user_id)
 
-        Args:
-            id: идентификатор пользователя.
-            username: никнейм пользователя (Optional).
-            first_name: Имя (Optional).
-            last_name: Фамилия (Optional).
+        res = (await self.session.execute(stmt)).scalar_one_or_none()
 
-        Returns:
-            Экземпляр User (найденный или созданный).
-        """
-        logger.debug(f"Создание или получение пользователя с id={id}")
-        user = await self.get(id)
-        if user is None:
-            logger.debug(f"Пользователь с id={id} не существует, создаем")
-            user = await self.create(id, username, first_name, last_name, is_banned)
-        return user
+        if res is None:
+            return None
+
+        user_dto = UserDTO(
+            id=res.id,
+            username=res.username,
+            first_name=res.first_name,
+            last_name=res.last_name,
+            is_banned=res.is_banned,
+        )
+        return UserEntity(user_dto)
 
     async def is_user_banned(self, user_id: int) -> bool:
         """Проверка забанен ли пользователь."""
@@ -86,7 +78,7 @@ class UserRepository(Repository[User]):
             logger.error(f"Пользователь с id={user_id} не найден при попытке бане.")
             return
         await self.session.execute(
-            update(User).where(User.id == user_id).values(is_banned=True)
+            update(UserModel).where(UserModel.id == user_id).values(is_banned=True),
         )
         logger.info(f"Пользователь id={user_id} был забанен.")
 
@@ -97,6 +89,6 @@ class UserRepository(Repository[User]):
             logger.error(f"Пользователь с id={user_id} не найден при попытке разбана.")
             return
         await self.session.execute(
-            update(User).where(User.id == user_id).values(is_banned=False)
+            update(UserModel).where(UserModel.id == user_id).values(is_banned=False),
         )
         logger.info(f"Пользователь id={user_id} был разбанен.")

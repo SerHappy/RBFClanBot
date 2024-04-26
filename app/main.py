@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import handlers
@@ -21,7 +20,7 @@ def _loguru_setup() -> None:
     current_file_path = Path(__file__).resolve()
     app_directory = current_file_path.parent
     logs_directory = app_directory / "logs"
-    os.makedirs(logs_directory, exist_ok=True)
+    Path.mkdir(logs_directory, exist_ok=True)
     full_log_path = logs_directory / "full_log.log"
     warnings_log_path = logs_directory / "warnings_and_above.log"
     logger.add(
@@ -45,7 +44,7 @@ def _install_uvloop() -> None:
     logger.debug("Установка uvloop прошла успешно.")
 
 
-async def post_init(application: Application):
+async def post_init(application: Application) -> None:
     """Установка команд для бота."""
     await application.bot.set_my_commands([("start", "Подать заявку")])
 

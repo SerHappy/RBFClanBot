@@ -3,7 +3,12 @@ from datetime import datetime
 from loguru import logger
 from models import Application
 from sqlalchemy import select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domain.application.dto import ApplicationDTO
+from app.domain.application.entities import Application as ApplicationEntity
+from app.domain.application.exceptions import ApplicationAlreadyExistsError
 
 from .abstract import Repository
 
@@ -15,58 +20,70 @@ class ApplicationRepository(Repository[Application]):
         """Инициализация репозитория."""
         super().__init__(type_model=Application, session=session)
 
-    async def create(
+    async def create(self, user_id: int) -> ApplicationEntity:
+        """Создание заявки."""
+        application = Application(user_id=user_id)
+        try:
+            self.session.add(application)
+            await self.session.flush()
+        except IntegrityError as e:
+            raise ApplicationAlreadyExistsError from e
+
+        application_dto = ApplicationDTO(
+            id=application.id,
+            user_id=application.user_id,
+            status=application.status,
+        )
+        return ApplicationEntity(data=application_dto)
+
+    async def retrieve_user_applications(
         self,
         user_id: int,
-        status_id: int | None = 1,
-        decision_date: str | None = None,
-        rejection_reason: str | None = None,
-        invite_link: str | None = None,
-    ) -> Application:
-        """
-        Создание заявки.
-
-        Args:
-            user_id: Идентификатор пользователя.
-            status_id: Идентификатор статуса заявки. По умолчанию равен 1.
-            decision_date: Дата решения (Optional).
-            rejection_reason: Причина отклонения (Optional).
-            invite_link: Ссылка на приглашение (Optional).
-
-        Returns:
-            Экземпляр Application (созданный).
-        """
-        logger.debug(f"Создание заявки для пользователя с id={user_id}")
-        application = await self.session.merge(
-            self.model(
-                user_id=user_id,
-                status_id=status_id,
-                decision_date=decision_date,
-                rejection_reason=rejection_reason,
-                invite_link=invite_link,
+    ) -> list[ApplicationEntity]:
+        """Retrieve user applications."""
+        stmt = select(Application).where(Application.user_id == user_id)
+        res = (await self.session.execute(stmt)).scalars().all()
+        applications = []
+        for application in res:
+            application_dto = ApplicationDTO(
+                id=application.id,
+                user_id=application.user_id,
+                status=application.status,
             )
-        )
-        logger.debug(f"Создана заявка для пользователя с id={user_id}")
-        return application
+            applications.append(ApplicationEntity(data=application_dto))
+        return applications
 
-    async def get_user_application(self, user_id: int) -> Application | None:
+    async def get_last_application(self, user_id: int) -> ApplicationEntity | None:
+        """Retrieve last user application."""
         stmt = (
             select(Application)
             .where(Application.user_id == user_id)
-            .order_by(Application.decision_date.desc())
+            .order_by(
+                Application.decision_date.desc(),
+            )
             .limit(1)
         )
-        res = (await self.session.execute(stmt)).scalar_one_or_none()
-        return res
+        application = (await self.session.execute(stmt)).scalar_one_or_none()
+        if application is None:
+            return None
+        application_dto = ApplicationDTO(
+            id=application.id,
+            user_id=application.user_id,
+            status=application.status,
+        )
+        return ApplicationEntity(data=application_dto)
 
     async def get_active_application(self, user_id: int) -> Application | None:
         """Получить активную заявку пользователя.
 
         Args:
+        ----
             user_id: ID пользователя.
 
         Returns:
+        -------
             Заявка пользователя Application или None.
+
         """
         logger.debug(f"Получение активной заявки пользователя с id={user_id}")
         statement = (
@@ -83,17 +100,19 @@ class ApplicationRepository(Repository[Application]):
         return res
 
     async def create_if_not_exists(self, user_id: int) -> Application:
-        """
-        Создание заявки в случае ее отсутствия.
+        """Создание заявки в случае ее отсутствия.
 
         Args:
+        ----
             user_id: ID пользователя.
 
         Returns:
+        -------
             Заявка пользователя Application.
+
         """
         logger.debug(
-            f"Создание или получение активной заявки пользователя с id={user_id}"
+            f"Создание или получение активной заявки пользователя с id={user_id}",
         )
         application = await self.get_active_application(user_id)
         if application is None:
@@ -102,18 +121,20 @@ class ApplicationRepository(Repository[Application]):
         return application
 
     async def change_status(self, application_id: int, status_id: int) -> None:
-        """
-        Смена статуса заявки.
+        """Смена статуса заявки.
 
         Args:
+        ----
             application_id: ID заявки.
             status_id: ID статуса.
 
         Returns:
+        -------
             None
+
         """
         logger.debug(
-            f"Смена статуса заявки application_id={application_id} на status_id={status_id}"
+            f"Смена статуса заявки application_id={application_id} на status_id={status_id}",
         )
         statement = (
             update(Application)
@@ -122,24 +143,26 @@ class ApplicationRepository(Repository[Application]):
         )
         await self.session.execute(statement)
         logger.debug(
-            f"Статус заявки application_id={application_id} изменен на status_id={status_id}"
+            f"Статус заявки application_id={application_id} изменен на status_id={status_id}",
         )
 
     async def approve_application(self, application_id: int, invite_link: str) -> None:
-        """
-        Принятие заявки.
+        """Принятие заявки.
 
         Перевод статуса заявки в 3 и добавление ссылки на приглашение.
 
         Args:
+        ----
             application_id: ID заявки.
             invite_link: Ссылка на приглашение.
 
         Returns:
+        -------
             None
+
         """
         logger.debug(
-            f"Принятие заявки application_id={application_id}, перевод в статус 3 и добавление ссылки invite_link={invite_link}"
+            f"Принятие заявки application_id={application_id}, перевод в статус 3 и добавление ссылки invite_link={invite_link}",
         )
         await self.change_status(application_id, 3)
         statement = (
@@ -151,22 +174,26 @@ class ApplicationRepository(Repository[Application]):
         logger.debug(f"Заявка application_id={application_id} принята")
 
     async def reject_application(
-        self, application_id: int, rejection_reason: str
+        self,
+        application_id: int,
+        rejection_reason: str,
     ) -> None:
-        """
-        Отклонение заявки.
+        """Отклонение заявки.
 
         Перевод статуса заявки в 4 и добавление причины отклонения.
 
         Args:
+        ----
             application_id: ID заявки.
             rejection_reason: Причина отклонения.
 
         Returns:
+        -------
             None
+
         """
         logger.debug(
-            f"Отклонение заявки application_id={application_id}, перевод в статус 4 и добавление причины rejection_reason={rejection_reason}"
+            f"Отклонение заявки application_id={application_id}, перевод в статус 4 и добавление причины rejection_reason={rejection_reason}",
         )
         await self.change_status(application_id, 4)
         statement = (

@@ -4,5 +4,4 @@ __mypy_cache/
 .vscode/
 .git/
 .env
-*.txt
 logs/

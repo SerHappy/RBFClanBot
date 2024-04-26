@@ -24,25 +24,28 @@ class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
         """Создание ответа на заявку.
 
         Args:
+        ----
             application_id: ID заявки.
             question_number: Номер вопроса.
             answer_text: Текст ответа (Optional).
 
         Returns:
+        -------
             Экземпляр ApplicationAnswer (созданный).
+
         """
         logger.debug(
-            f"Создание ответа на заявку для application_id={application_id} и question_number={question_number} с текстом text={answer_text}"
+            f"Создание ответа на заявку для application_id={application_id} и question_number={question_number} с текстом text={answer_text}",
         )
         answer = await self.session.merge(
             self.model(
                 application_id=application_id,
                 question_number=question_number,
                 answer_text=answer_text,
-            )
+            ),
         )
         logger.debug(
-            f"Создан ответ на заявку для application_id={application_id} и question_number={question_number}"
+            f"Создан ответ на заявку для application_id={application_id} и question_number={question_number}",
         )
         return answer
 
@@ -51,18 +54,20 @@ class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
         application_id: int,
         question_number: int,
     ) -> str | None:
-        """
-        Получение текста ответа по номеру вопроса у заданной заявки.
+        """Получение текста ответа по номеру вопроса у заданной заявки.
 
         Args:
+        ----
             application_id: ID заявки.
             question_number: Номер вопроса.
 
         Returns:
+        -------
             Текст ответа или None.
+
         """
         logger.debug(
-            f"Получение текста ответа для application_id={application_id} и question_number={question_number}"
+            f"Получение текста ответа для application_id={application_id} и question_number={question_number}",
         )
         statement = (
             select(ApplicationAnswer)
@@ -73,11 +78,11 @@ class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
         answer = (await self.session.execute(statement)).scalar()
         if answer is None:
             logger.debug(
-                f"Не найден ответ для application_id={application_id} и question_number={question_number}"
+                f"Не найден ответ для application_id={application_id} и question_number={question_number}",
             )
             return None
         logger.debug(
-            f"Найден ответ для application_id={application_id} и question_number={question_number}, возвращаем текст"
+            f"Найден ответ для application_id={application_id} и question_number={question_number}, возвращаем текст",
         )
         return answer.answer_text
 
@@ -88,10 +93,13 @@ class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
         """Получение всех ответов заявки.
 
         Args:
+        ----
             application_id: ID заявки.
 
         Returns:
+        -------
             Список экземпляров ApplicationAnswer.
+
         """
         logger.debug(f"Получение всех ответов для application_id={application_id}")
         statement = (
@@ -105,20 +113,26 @@ class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
         return answers
 
     async def update_question_answer(
-        self, application_id: int, question_number: int, answer_text: str
+        self,
+        application_id: int,
+        question_number: int,
+        answer_text: str,
     ) -> None:
         """Обновление ответа на вопрос.
 
         Args:
+        ----
             application_id: ID заявки.
             question_number: Номер вопроса.
             answer_text: Новый текст ответа.
 
         Returns:
+        -------
             None
+
         """
         logger.debug(
-            f"Обновление ответа на вопрос для application_id={application_id} и question_number={question_number}"
+            f"Обновление ответа на вопрос для application_id={application_id} и question_number={question_number}",
         )
         statement = (
             update(ApplicationAnswer)
@@ -128,22 +142,24 @@ class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
         )
         await self.session.execute(statement)
         logger.debug(
-            f"Обновлен ответ на вопрос для application_id={application_id} и question_number={question_number}. Новый текст: {answer_text}"
+            f"Обновлен ответ на вопрос для application_id={application_id} и question_number={question_number}. Новый текст: {answer_text}",
         )
-        return None
 
     async def delete_all_answers_by_application_id(self, application_id: int) -> None:
         """Удаление всех ответов для заявки.
 
         Args:
+        ----
             application_id: ID заявки.
 
         Returns:
+        -------
             None
+
         """
         logger.debug(f"Удаление всех ответов для application_id={application_id}")
         statement = delete(ApplicationAnswer).where(
-            ApplicationAnswer.application_id == application_id
+            ApplicationAnswer.application_id == application_id,
         )
         await self.session.execute(statement)
         logger.debug(f"Удалены все ответы для application_id={application_id}")

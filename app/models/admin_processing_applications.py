@@ -15,7 +15,7 @@ class AdminProcessingApplication(Base):
         type_=BigInteger,
     )
     application_id: Mapped[int] = mapped_column(
-        ForeignKey("applications.id", ondelete="CASCADE")
+        ForeignKey("applications.id", ondelete="CASCADE"),
     )
 
     admin = relationship("User", back_populates="admin_applications")

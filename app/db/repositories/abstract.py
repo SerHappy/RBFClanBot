@@ -1,5 +1,5 @@
 import abc
-from typing import Any, Generic, Type, TypeVar
+from typing import Any, Generic, TypeVar
 
 from models import Base
 from sqlalchemy import delete, select
@@ -11,15 +11,17 @@ AbstractModel = TypeVar("AbstractModel", bound=Base)
 class Repository(Generic[AbstractModel]):
     """Abstract repository."""
 
-    model: Type[AbstractModel]
+    model: type[AbstractModel]
     session: AsyncSession
 
-    def __init__(self, type_model: Type[AbstractModel], session: AsyncSession) -> None:
+    def __init__(self, type_model: type[AbstractModel], session: AsyncSession) -> None:
         """Initialize repository.
 
         Args:
+        ----
             type_model: Model.
             session: Session.
+
         """
         self.model = type_model
         self.session = session
@@ -28,10 +30,13 @@ class Repository(Generic[AbstractModel]):
         """Get model by pk.
 
         Args:
+        ----
             pk: Identifier.
 
         Returns:
+        -------
             Model.
+
         """
         return await self.session.get(self.model, ident=pk)
 
@@ -39,24 +44,33 @@ class Repository(Generic[AbstractModel]):
         """Get one model by where clause.
 
         Args:
+        ----
             where_clause: Where clause.
 
         Returns:
+        -------
             Model or None.
+
         """
         statement = select(self.model).where(where_clause)
         return (await self.session.execute(statement)).one_or_none()  # type: ignore
 
     async def get_many(
-        self, where_clause: Any, limit: int = 100, order_by: Any = None
+        self,
+        where_clause: Any,
+        limit: int = 100,
+        order_by: Any = None,
     ) -> list[AbstractModel]:
         """Get many models by where clause.
 
         Args:
+        ----
             where_clause: Where clause.
 
         Returns:
+        -------
             Models.
+
         """
         statement = select(self.model).where(where_clause).limit(limit)
         if order_by:
@@ -67,7 +81,9 @@ class Repository(Generic[AbstractModel]):
         """Delete model.
 
         Args:
+        ----
             model: Model.
+
         """
         statement = delete(self.model).where(where_clause)
         await self.session.execute(statement)
@@ -75,4 +91,3 @@ class Repository(Generic[AbstractModel]):
     @abc.abstractmethod
     async def create(self, *args, **kwargs) -> None:
         """Create model. Should be implemented in subclasses."""
-        pass

@@ -20,6 +20,23 @@ pydantic-settings = "^2.2.1"
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.4.1"
 
+[tool.ruff]
+exclude = [".venv", "alembic"]
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "D100",
+    "D104",
+    "FA102",
+    "ANN101",
+    "A002",
+    "TD003",
+    "FIX002",
+    "TD002",
+    "RUF001",
+    "RUF002",
+]
 
 [build-system]
 requires = ["poetry-core"]

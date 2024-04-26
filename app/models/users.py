@@ -1,14 +1,13 @@
 from datetime import datetime
 
-from sqlalchemy import TIMESTAMP, String, text
+from sqlalchemy import TIMESTAMP, BigInteger, String, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 
 
 class User(Base):
-    """
-    Модель пользователей.
+    """Модель пользователей.
 
     Название таблицы: users
 
@@ -23,10 +22,14 @@ class User(Base):
 
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    username: Mapped[str] = mapped_column(String(255))
-    first_name: Mapped[str] = mapped_column(String(64))
-    last_name: Mapped[str] = mapped_column(String(64))
+    id: Mapped[int] = mapped_column(
+        primary_key=True,
+        autoincrement=True,
+        type_=BigInteger,
+    )
+    username: Mapped[str] = mapped_column(String(255), nullable=True)
+    first_name: Mapped[str] = mapped_column(String(64), nullable=True)
+    last_name: Mapped[str] = mapped_column(String(64), nullable=True)
     is_banned: Mapped[bool] = mapped_column(default=False, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         TIMESTAMP(timezone=True),
