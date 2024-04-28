@@ -1,18 +1,18 @@
-from enum import Enum
+from enum import IntEnum
 
 
-class ApplicationStates(Enum):
+class ApplicationStates(IntEnum):
     """Application states."""
 
-    pubgID_state = 1
-    age_state = 2
-    game_modes_state = 3
-    activity_state = 4
-    about_state = 5
-    change_or_accept_state = 6
+    PUBG_ID_STATE = 1
+    AGE_STATE = 2
+    GAME_MODES_STATE = 3
+    ACTIVITY_STATE = 4
+    ABOUT_STATE = 5
+    CHANGE_OR_ACCEPT_STATE = 6
 
 
-class DeclineUserStates(Enum):
+class DeclineUserStates(IntEnum):
     """Decline user states."""
 
-    decline_reason_state = 1
+    DECLINE_REASON_STATE = 1

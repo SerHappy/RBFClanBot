@@ -1,32 +1,32 @@
 import keyboards
 from config import ApplicationStates
 from decorators import updates
-from services import application
 from telegram import Chat, Message
 from telegram.ext import ContextTypes
 
+from app.handlers.application.questions.universal.base import handle_question
+from app.handlers.application.questions.universal.dto import QuestionResponseDTO
+
 
 @updates.check_application_update()
-async def activity(user_id: int, chat: Chat, message: Message, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """
-    Обработка ответа состояния ApplicationStates.activity_state.
-
-    Args:
-        update: Экземпляр Update.
-        context: Контекст.
-
-    Returns:
-        Следующее состояние.
-
-    """
-    return await application.process_application_answer(
+async def activity(
+    user_id: int,
+    chat: Chat,  # noqa: ARG001
+    message: Message,
+    context: ContextTypes.DEFAULT_TYPE,
+) -> int:
+    """Обработка ответа состояния ApplicationStates.activity_state."""
+    data = QuestionResponseDTO(
+        bot=context.bot,
         user_id=user_id,
-        chat=chat,
-        message=message,
+        message_text=message.text,  # type: ignore[reportArgumentType]
         question_number=4,
-        next_message="Расскажи о себе, либо пропусти вопрос.\n"
-        + "Чем больше информации мы о тебе получим, тем выше вероятность одобрения заявки.",
-        keyboard=keyboards.USER_SKIP_KEYBOARD,
-        next_state=ApplicationStates.about_state,
-        context=context,
+        next_question_text=(
+            "Расскажи о себе, либо пропусти вопрос.\n"
+            "Чем больше информации мы о тебе получим, "
+            "тем выше вероятность одобрения заявки."
+        ),
+        next_state=ApplicationStates.ABOUT_STATE,
+        reply_markup=keyboards.USER_SKIP_KEYBOARD,
     )
+    return await handle_question(data)

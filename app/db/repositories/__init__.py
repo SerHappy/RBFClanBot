@@ -1,15 +1,15 @@
-from .abstract import Repository
-from .admin_processing_application import AdminProcessingApplicationRepository
-from .application import ApplicationRepository
-from .application_answer import ApplicationAnswerRepository
-from .application_status import ApplicationStatusRepository
-from .user import UserRepository
+from app.db.repositories.abstract import Repository
+from app.db.repositories.admin_processing_application import (
+    AdminProcessingApplicationRepository,
+)
+from app.db.repositories.application import ApplicationRepository
+from app.db.repositories.application_answer import ApplicationAnswerRepository
+from app.db.repositories.user import UserRepository
 
 __all__ = [
     "Repository",
     "UserRepository",
     "ApplicationRepository",
     "ApplicationAnswerRepository",
-    "ApplicationStatusRepository",
     "AdminProcessingApplicationRepository",
 ]

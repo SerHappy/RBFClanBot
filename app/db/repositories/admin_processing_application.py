@@ -1,7 +1,16 @@
 from loguru import logger
 from models import AdminProcessingApplication
-from sqlalchemy import select
+from sqlalchemy import delete, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domain.admin_processing_application.dto import AdminProcessingApplicationDTO
+from app.domain.admin_processing_application.entities import (
+    AdminProcessingApplication as AdminProcessingApplicationEntity,
+)
+from app.domain.admin_processing_application.exceptions import (
+    ApplicationAlreadyProcessedError,
+)
 
 from .abstract import Repository
 
@@ -14,29 +23,45 @@ class AdminProcessingApplicationRepository(Repository[AdminProcessingApplication
         super().__init__(type_model=AdminProcessingApplication, session=session)
 
     async def create(
-        self, admin_id: int, application_id: int
-    ) -> AdminProcessingApplication:
+        self,
+        admin_id: int,
+        application_id: int,
+    ) -> AdminProcessingApplicationEntity:
         """Создание связи админа и обрабатываемой им заявки."""
-        logger.debug(f"Создание связи админа {admin_id=} и заявки {application_id=}")
-        row = await self.session.merge(
-            self.model(admin_id=admin_id, application_id=application_id)
+        admin_processing_application = AdminProcessingApplication(
+            admin_id=admin_id,
+            application_id=application_id,
         )
-        return row
+        try:
+            self.session.add(admin_processing_application)
+        except IntegrityError as e:
+            raise ApplicationAlreadyProcessedError from e
+        return AdminProcessingApplicationEntity(
+            data=AdminProcessingApplicationDTO(
+                admin_id=admin_id,
+                application_id=application_id,
+            ),
+        )
 
-    async def get_admin_processing_application(
-        self, admin_id: int
-    ) -> AdminProcessingApplication | None:
+    async def get_by_admin_id(
+        self,
+        admin_id: int,
+    ) -> AdminProcessingApplicationEntity | None:
         """Получение обрабатываемой админов заявки, если она есть."""
         logger.debug(f"Получение обрабатываемой админом {admin_id=} заявки")
-        query = select(self.model).where(self.model.admin_id == admin_id)
-        res = await self.session.execute(query)
-        return res.scalar_one_or_none()
+        query = select(self.model).filter_by(admin_id=admin_id)
+        res = (await self.session.execute(query)).scalar_one_or_none()
+        if not res:
+            return None
+        return AdminProcessingApplicationEntity(
+            data=AdminProcessingApplicationDTO(res.admin_id, res.application_id),
+        )
 
     async def delete(self, admin_id: int) -> None:
         """Удаление связи админа и обрабатываемой им заявки."""
         logger.debug(f"Удаление связи админа {admin_id=} и заявки")
-        row = await self.get_admin_processing_application(admin_id=admin_id)
+        query = delete(self.model).filter_by(admin_id=admin_id)
         try:
-            await self.session.delete(row)
+            await self.session.execute(query)
         except Exception as e:
             logger.error(f"Ошибка при удалении связи админа {admin_id=} и заявки: {e}")

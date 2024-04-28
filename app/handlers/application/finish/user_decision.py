@@ -1,10 +1,18 @@
-import keyboards
-from config import ApplicationStates
 from decorators import updates
 from loguru import logger
-from services import application, message_service
 from telegram import Chat, Message
-from telegram.ext import ContextTypes, ConversationHandler
+from telegram.ext import ContextTypes, ConversationHandler, ExtBot
+
+from app import keyboards
+from app.config.states import ApplicationStates
+from app.core.config import settings
+from app.db.engine import UnitOfWork
+from app.services.applications.application_complete import (
+    ApplicationCompleteService,
+)
+from app.services.applications.application_formatting import (
+    ApplicationFormattingService,
+)
 
 
 @updates.check_application_update()
@@ -14,93 +22,79 @@ async def user_decision(
     message: Message,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> int:
-    """
-    Обработка ввода варианта ответа при изменении или принятия заявки.
-
-    Если ответ 1-5 - переход на соответствующее состояние и изменение ответа в базе данных.
-    Если ответ 6 - отправка заявки администраторам и перевод в состояние ConversationHandler.END.
-
-    Args:
-        update: Экземпляр Update.
-        context: Контекст.
-
-    Returns:
-        Состояние для изменения или ConversationHandler.END.
-    """
+    """Respond to user decision."""
     logger.info(f"Обработка варианта ответа пользователя для chat_id={chat.id}")
-
-    context.user_data["application_completed"] = True  # type: ignore
-    logger.debug(f"Переменная application_completed для chat_id={chat.id} установлена в True")
-
-    logger.info(f"Пользователь chat_id={chat.id} ответил на вопрос overview: {message.text}")
-
-    return await _choose_action(message.text, user_id, chat, context)
+    return await _handle_answer_change_request(user_id, message.text, context.bot)
 
 
-async def _choose_action(answer: str | None, user_id: int, chat: Chat, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """
-    Выбор действия для пользователя.
-
-    Args:
-        answer: Ответ пользователя.
-        user: Пользователь.
-        chat: Чат.
-        context: Контекст.
-
-    Returns:
-        Состояние для изменения или ConversationHandler.END.
-
-    """
-    logger.debug(f"Выбор действия для пользователя user={user_id}")
-    if answer == "1":
-        logger.debug(f"Пользователь user={user_id} выбрал изменить PubgID")
-        await application.ask_next_question(
-            chat,
-            "Напиши свой PUBG ID",
+async def _handle_answer_change_request(
+    user_id: int,
+    decision: str | None,
+    bot: ExtBot,
+) -> int:
+    messages = {
+        "1": (
+            "Напиши свой PUBG ID",
+            ApplicationStates.PUBG_ID_STATE,
             keyboards.REMOVE_KEYBOARD,
-        )
-        return ApplicationStates.pubgID_state
-    if answer == "2":
-        logger.debug(f"Пользователь user={user_id} выбрал изменить возраст")
-        await application.ask_next_question(
-            chat,
+        ),
+        "2": (
             "Сколько тебе полных лет?",
+            ApplicationStates.AGE_STATE,
             keyboards.REMOVE_KEYBOARD,
-        )
-        return ApplicationStates.age_state
-    if answer == "3":
-        logger.debug(f"Пользователь user={user_id} выбрал изменить режимы игры")
-        await application.ask_next_question(
-            chat,
+        ),
+        "3": (
             "Какие режимы игры предпочитаешь больше всего? (можно несколько)",
+            ApplicationStates.GAME_MODES_STATE,
             keyboards.REMOVE_KEYBOARD,
-        )
-        return ApplicationStates.game_modes_state
-    if answer == "4":
-        logger.debug(f"Пользователь user={user_id} выбрал изменить частоту активности")
-        await application.ask_next_question(
-            chat,
-            "Сколько времени в день готов уделять игре с соклановцами? (примерно; можно по дням)",
+        ),
+        "4": (
+            (
+                "Сколько времени в день готов уделять игре с соклановцами? "
+                "(примерно; можно по дням)"
+            ),
+            ApplicationStates.ACTIVITY_STATE,
             keyboards.REMOVE_KEYBOARD,
-        )
-        return ApplicationStates.activity_state
-    if answer == "5":
-        logger.debug(f"Пользователь user={user_id} выбрал изменить о себе")
-        await application.ask_next_question(
-            chat,
-            "Расскажи о себе либо пропусти вопрос. Чем больше информации мы о тебе получим, тем выше вероятность одобрения заявки.",
+        ),
+        "5": (
+            (
+                "Расскажи о себе либо пропусти вопрос. "
+                "Чем больше информации мы о тебе получим, "
+                "тем выше вероятность одобрения заявки."
+            ),
+            ApplicationStates.ABOUT_STATE,
             keyboards.USER_SKIP_KEYBOARD,
+        ),
+    }
+    if decision in messages:
+        message, state, keyboard = messages[decision]
+        await bot.send_message(user_id, message, reply_markup=keyboard)
+        return state.value
+    return await _handle_application_complete(user_id, decision, bot)
+
+
+async def _handle_application_complete(
+    user_id: int,
+    decision: str | None,
+    bot: ExtBot,
+) -> int:
+    if decision == "6":
+        uow = UnitOfWork()
+        application_complete_service = ApplicationCompleteService(uow)
+        application = await application_complete_service.execute(user_id)
+        formatting_service = ApplicationFormattingService(uow)
+        formatted_application = await formatting_service.execute(application.id)
+        await bot.send_message(
+            text=formatted_application,
+            chat_id=settings.ADMIN_CHAT_ID,
+            reply_markup=keyboards.ADMIN_HANDLE_APPLICATION_KEYBOARD(application.id),
+            parse_mode="MarkdownV2",
         )
-        return ApplicationStates.about_state
-    if answer == "6":
-        logger.debug(f"Пользователь user={user_id} выбрал отправить заявку администраторам")
-        await application.change_application_status_to_waiting(user_id)
-        await chat.send_message(
+        await bot.send_message(
+            user_id,
             "Заявка отправлена, ожидай ответа!",
             reply_markup=keyboards.REMOVE_KEYBOARD,
         )
-        await message_service.send_application_to_admins(bot=context.bot, user_id=user_id)
         return ConversationHandler.END
-    logger.debug(f"Пользователь user={user_id} ввел неверную команду")
-    await chat.send_message("Неверная команда. Выбери число от 1 до 6.")
-    return ApplicationStates.change_or_accept_state
+    await bot.send_message(user_id, "Неверная команда. Выбери число от 1 до 6.")
+    return ApplicationStates.CHANGE_OR_ACCEPT_STATE.value

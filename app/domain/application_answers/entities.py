@@ -6,7 +6,6 @@ class ApplicationAnswer:
 
     def __init__(self, data: AnswerDTO) -> None:
         """Initialize the application answer instance."""
-        self.id = data.id
         self.application_id = data.application_id
         self.answer_text = data.answer_text
         self.question_number = data.question_number

@@ -35,6 +35,7 @@ class Settings(BaseSettings):
     SQLALCHEMY_ECHO: bool = True
 
     ADMIN_CHAT_ID: int
+    DEVELOPER_CHAT_ID: int
     CLAN_CHAT_ID: int
 
 

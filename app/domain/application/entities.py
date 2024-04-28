@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 from app.domain.application.dto import ApplicationDTO
 from app.domain.application.exceptions import (
     ApplicationAlreadyCompleteError,
@@ -32,6 +34,7 @@ class Application:
         self.invite_link = data.invite_link
         self.rejection_reason = data.rejection_reason
         self.answers = answers if answers else {}
+        self.admin_id = data.admin_id
 
     def add_new_answer(self, answer: ApplicationAnswer) -> None:
         """Add a new answer to the application."""
@@ -64,26 +67,32 @@ class Application:
 
         self.status = ApplicationStatusEnum.WAITING
 
-    def take(self) -> None:
+    def take(self, admin_id: int) -> None:
         """Change the application status to 'PROCESSING'."""
         if self.status != ApplicationStatusEnum.WAITING:
             raise ChangeApplicationStatusError
 
+        self.admin_id = admin_id
         self.status = ApplicationStatusEnum.PROCESSING
 
-    def accept(self) -> None:
+    def accept(self, invite_link: str) -> None:
         """Change the application status to 'ACCEPTED'."""
         if self.status != ApplicationStatusEnum.PROCESSING:
             raise ChangeApplicationStatusError
 
         self.status = ApplicationStatusEnum.ACCEPTED
+        self.admin_id = None
+        self.invite_link = invite_link
 
-    def reject(self) -> None:
+    def reject(self, rejection_reason: str) -> None:
         """Change the application status to 'REJECTED'."""
         if self.status != ApplicationStatusEnum.PROCESSING:
             raise ChangeApplicationStatusError
 
         self.status = ApplicationStatusEnum.REJECTED
+        self.admin_id = None
+        self.rejection_reason = rejection_reason
+        self.decision_date = datetime.now(tz=timezone.utc)
 
     def _check_is_all_answers_filled(self) -> bool:
         """Check if all answers are filled."""

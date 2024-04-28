@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import handlers
+import handlers.error
 import uvloop
 from core.config import settings
 from loguru import logger
@@ -56,6 +57,7 @@ def _start_bot() -> None:
     )
     logger.debug("Создание приложения прошло успешно.")
     handlers.add_all_handlers(application)
+    application.add_error_handler(handlers.error.error_handler)
     logger.debug("Добавление обработчиков прошло успешно.")
     logger.info("Бот запущен")
     application.run_polling(drop_pending_updates=True)

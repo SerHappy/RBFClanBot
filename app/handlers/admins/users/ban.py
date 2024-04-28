@@ -1,17 +1,26 @@
 from core.config import settings
-from db import Database, session_factory
 from loguru import logger
-from telegram import Chat, Update
+from telegram import Update
 from telegram.ext import ContextTypes, ConversationHandler
 from validators import question_validators
 
+from app.db.engine import UnitOfWork
+from app.domain.user.exceptions import UserIsBannedError, UserNotFoundError
+from app.services.users.user_ban import UserBanService
 
-async def ban_user_preprocess(update: Update, context: ContextTypes.DEFAULT_TYPE):
+
+async def ban_user(
+    update: Update,
+    context: ContextTypes.DEFAULT_TYPE,  # noqa: ARG001
+) -> int | None:
     """Обработчик команды бана пользователя."""
     chat = update.effective_chat
     if not update.message or not update.message.text or not chat:
         logger.error(
-            "Получен некорректный update при попытке вызова обработчика бана пользователя."
+            (
+                "Получен некорректный update при попытке "
+                "вызова обработчика бана пользователя."
+            ),
         )
         return ConversationHandler.END
     if chat.id != settings.ADMIN_CHAT_ID:
@@ -21,21 +30,14 @@ async def ban_user_preprocess(update: Update, context: ContextTypes.DEFAULT_TYPE
     if not question_validators.is_only_numbers(user_id):
         await chat.send_message("Неверный ID пользователя.")
         return ConversationHandler.END
-    await _ban_user(chat, int(user_id))
-
-
-# TODO: Вынести в сервис пользователя
-async def _ban_user(chat: Chat, user_id: int) -> None:
-    async with session_factory() as session:
-        db = Database(session)
-        if not await db.user.get(user_id):
-            await chat.send_message(f"Пользователь с ID {user_id} не существует.")
-            await session.commit()
-            return
-        if await db.user.is_user_banned(user_id):
-            await chat.send_message(f"Пользователь с ID {user_id} уже забанен.")
-            await session.commit()
-            return
-        await db.user.ban_user(user_id)
-        await session.commit()
-    await chat.send_message(f"Пользователь с ID {user_id} забанен.")
+    uow = UnitOfWork()
+    ban_service = UserBanService(uow)
+    try:
+        await ban_service.execute(int(user_id))
+    except UserNotFoundError:
+        await chat.send_message("Пользователь не найден.")
+    except UserIsBannedError:
+        await chat.send_message("Пользователь уже забанен.")
+    else:
+        await chat.send_message("Пользователь забанен.")
+    return None

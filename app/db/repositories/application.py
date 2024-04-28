@@ -3,12 +3,18 @@ from datetime import datetime
 from loguru import logger
 from models import Application
 from sqlalchemy import select, update
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.domain.application.dto import ApplicationDTO
 from app.domain.application.entities import Application as ApplicationEntity
-from app.domain.application.exceptions import ApplicationAlreadyExistsError
+from app.domain.application.exceptions import (
+    ApplicationAlreadyExistsError,
+    ApplicationDoesNotExistError,
+)
+from app.domain.application_answers.dto import AnswerDTO
+from app.domain.application_answers.entities import ApplicationAnswer
 
 from .abstract import Repository
 
@@ -36,42 +42,48 @@ class ApplicationRepository(Repository[Application]):
         )
         return ApplicationEntity(data=application_dto)
 
-    async def retrieve_user_applications(
+    async def get_by_id(self, application_id: int) -> ApplicationEntity:
+        """Get application by id."""
+        stmt = (
+            select(Application)
+            .options(selectinload(Application.answers))
+            .filter_by(id=application_id)
+        )
+        res = (await self.session.execute(stmt)).scalar_one()
+        return self._get_application_entity(res)
+
+    async def retrieve_all(
         self,
         user_id: int,
     ) -> list[ApplicationEntity]:
         """Retrieve user applications."""
-        stmt = select(Application).where(Application.user_id == user_id)
-        res = (await self.session.execute(stmt)).scalars().all()
-        applications = []
-        for application in res:
-            application_dto = ApplicationDTO(
-                id=application.id,
-                user_id=application.user_id,
-                status=application.status,
+        stmt = (
+            select(Application)
+            .options(selectinload(Application.answers))
+            .where(Application.user_id == user_id)
+            .order_by(
+                Application.decision_date.desc(),
             )
-            applications.append(ApplicationEntity(data=application_dto))
-        return applications
+        )
+        res = (await self.session.execute(stmt)).scalars().all()
+        return [self._get_application_entity(application) for application in res]
 
-    async def get_last_application(self, user_id: int) -> ApplicationEntity | None:
+    async def retrieve_last(self, user_id: int) -> ApplicationEntity:
         """Retrieve last user application."""
         stmt = (
             select(Application)
+            .options(selectinload(Application.answers))
             .where(Application.user_id == user_id)
             .order_by(
                 Application.decision_date.desc(),
             )
             .limit(1)
         )
-        application = (await self.session.execute(stmt)).scalar_one_or_none()
-        if application is None:
-            return None
-        application_dto = ApplicationDTO(
-            id=application.id,
-            user_id=application.user_id,
-            status=application.status,
-        )
-        return ApplicationEntity(data=application_dto)
+        try:
+            application = (await self.session.execute(stmt)).scalar_one()
+        except NoResultFound as e:
+            raise ApplicationDoesNotExistError from e
+        return self._get_application_entity(application)
 
     async def get_active_application(self, user_id: int) -> Application | None:
         """Получить активную заявку пользователя.
@@ -99,25 +111,58 @@ class ApplicationRepository(Repository[Application]):
         logger.debug(f"Найдена активная заявка пользователя с id={user_id}")
         return res
 
-    async def create_if_not_exists(self, user_id: int) -> Application:
-        """Создание заявки в случае ее отсутствия.
-
-        Args:
-        ----
-            user_id: ID пользователя.
-
-        Returns:
-        -------
-            Заявка пользователя Application.
-
-        """
-        logger.debug(
-            f"Создание или получение активной заявки пользователя с id={user_id}",
+    async def add_link(
+        self,
+        application: ApplicationEntity,
+    ) -> ApplicationEntity:
+        """Add link to application."""
+        query = (
+            update(Application)
+            .filter_by(id=application.id)
+            .values(invite_link=application.invite_link)
         )
-        application = await self.get_active_application(user_id)
-        if application is None:
-            logger.debug(f"Заявка пользователя с id={user_id} не существует, создаем")
-            application = await self.create(user_id)
+        await self.session.execute(query)
+
+        return application
+
+    async def add_reject_reason(
+        self,
+        application: ApplicationEntity,
+    ) -> ApplicationEntity:
+        """Add reject reason to application."""
+        query = (
+            update(Application)
+            .filter_by(id=application.id)
+            .values(rejection_reason=application.rejection_reason)
+        )
+        await self.session.execute(query)
+
+        return application
+
+    async def add_decision_date(
+        self,
+        application: ApplicationEntity,
+    ) -> ApplicationEntity:
+        """Add reject reason to application."""
+        query = (
+            update(Application)
+            .filter_by(id=application.id)
+            .values(decision_date=application.decision_date)
+        )
+        await self.session.execute(query)
+
+        return application
+
+    # TODO: Create one update method to update all fields
+    async def update_status(self, application: ApplicationEntity) -> ApplicationEntity:
+        """Update application status."""
+        query = (
+            update(Application)
+            .filter_by(id=application.id)
+            .values(status=application.status)
+        )
+        await self.session.execute(query)
+
         return application
 
     async def change_status(self, application_id: int, status_id: int) -> None:
@@ -203,3 +248,26 @@ class ApplicationRepository(Repository[Application]):
         )
         await self.session.execute(statement)
         logger.debug(f"Заявка application_id={application_id} отклонена")
+
+    def _get_application_entity(self, application: Application) -> ApplicationEntity:
+        application_dto = ApplicationDTO(
+            id=application.id,
+            user_id=application.user_id,
+            status=application.status,
+            decision_date=application.decision_date,
+            rejection_reason=application.rejection_reason,
+            invite_link=application.invite_link,
+        )
+        return ApplicationEntity(
+            data=application_dto,
+            answers={
+                a.question_number: ApplicationAnswer(
+                    data=AnswerDTO(
+                        application_id=a.application_id,
+                        answer_text=a.answer_text,
+                        question_number=a.question_number,
+                    ),
+                )
+                for a in application.answers
+            },
+        )

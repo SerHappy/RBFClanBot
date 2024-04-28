@@ -5,6 +5,8 @@ class BaseUserError(Exception):
 class UserIsBannedError(BaseUserError):
     """Exception for when a user is banned."""
 
+class UserIsNotBannedError(BaseUserError):
+    """Exception for when a user is not banned."""
 
 class UserAlreadyExistsError(BaseUserError):
     """Exception for when a user already exists."""

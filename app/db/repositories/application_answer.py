@@ -49,6 +49,15 @@ class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
         )
         return answer
 
+    # async def get_answer_by_question(self, application_id: int, question_number: int):
+    #     statement = (
+    #         select(ApplicationAnswer)
+    #         .where(ApplicationAnswer.application_id == application_id)
+    #         .where(ApplicationAnswer.question_number == question_number)
+    #     )
+    #     answer = (await self.session.execute(statement)).scalar_one_or_none()
+    #     if answer is None
+
     async def get_application_answer_text_by_question_number(
         self,
         application_id: int,

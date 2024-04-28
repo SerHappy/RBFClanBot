@@ -9,6 +9,9 @@ from sqlalchemy.ext.asyncio import (
 
 from app.core.config import settings
 from app.db.repositories import ApplicationRepository
+from app.db.repositories.admin_processing_application import (
+    AdminProcessingApplicationRepository,
+)
 from app.db.repositories.application_answer import ApplicationAnswerRepository
 from app.db.repositories.user import UserRepository
 
@@ -54,6 +57,9 @@ class UnitOfWork:
 
         self.application = ApplicationRepository(self._session)
         self.application_answer = ApplicationAnswerRepository(self._session)
+        self.admin_processing_application = AdminProcessingApplicationRepository(
+            self._session,
+        )
         self.user = UserRepository(self._session)
         return self
 

@@ -1,9 +1,16 @@
+from datetime import datetime
+
+
 class BaseApplicationError(Exception):
     """Base exception for the application domain."""
 
 
 class ChangeApplicationStatusError(BaseApplicationError):
     """Exception for changing the application status."""
+
+
+class ApplicationDoesNotExistError(BaseApplicationError):
+    """Exception for when an application does not exist."""
 
 
 class ApplicationAnswerDoesNotExistError(BaseApplicationError):
@@ -40,3 +47,11 @@ class ApplicationDecisionDateNotFoundError(BaseApplicationError):
 
 class ApplicationWrongStatusError(BaseApplicationError):
     """Exception for when an application status is wrong."""
+
+
+class ApplicationCoolDownError(BaseApplicationError):
+    """Exception for when an application is cool down."""
+
+    def __init__(self, cooldown_ends: datetime) -> None:
+        """Initialize the application cool down error instance."""
+        self.cooldown_ends = cooldown_ends

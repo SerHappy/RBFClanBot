@@ -1,7 +1,7 @@
-from enum import Enum
+from enum import StrEnum
 
 
-class Callbacks(Enum):
+class Callbacks(StrEnum):
     """Callbacks for bot."""
 
     APPLICATION_ACCEPT = "application_accept:{application_id}"

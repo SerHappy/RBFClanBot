@@ -1,4 +1,4 @@
-from config.callbacks import Callbacks
-from config.states import ApplicationStates, DeclineUserStates
+from app.config.callbacks import Callbacks
+from app.config.states import ApplicationStates, DeclineUserStates
 
 __all__ = ["Callbacks", "ApplicationStates", "DeclineUserStates"]

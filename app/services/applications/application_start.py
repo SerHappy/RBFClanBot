@@ -6,7 +6,9 @@ from app.domain.application.entities import Application
 from app.domain.application.exceptions import (
     ApplicationAlreadyAcceptedError,
     ApplicationAtWaitingStatusError,
+    ApplicationCoolDownError,
     ApplicationDecisionDateNotFoundError,
+    ApplicationDoesNotExistError,
     ApplicationWrongStatusError,
 )
 from app.domain.application.value_objects import ApplicationStatusEnum
@@ -23,6 +25,7 @@ class ApplicationStartService:
         """Initialize the application start service."""
         self._uow = uow
 
+    # TODO: Refactor this into small private methods
     async def execute(self, user_id: int) -> Application:
         """Execute the application start service."""
         async with self._uow():
@@ -31,10 +34,11 @@ class ApplicationStartService:
                 raise UserNotFoundError
             if user.is_banned:
                 raise UserIsBannedError
-            user_application = await self._uow.application.get_last_application(
-                user_id,
-            )
-            if not user_application:
+            try:
+                user_application = await self._uow.application.retrieve_last(
+                    user_id,
+                )
+            except ApplicationDoesNotExistError:
                 user_application = await self._uow.application.create(user_id)
                 await self._uow.commit()
                 return user_application
@@ -56,8 +60,11 @@ class ApplicationStartService:
                 now = datetime.now(tz=dt.UTC)
                 if user_application.decision_date is None:
                     raise ApplicationDecisionDateNotFoundError
-                if user_application.decision_date + timedelta(30) >= now:
+                if now - user_application.decision_date >= timedelta(days=30):
                     user_application = await self._uow.application.create(user_id)
                     await self._uow.commit()
                     return user_application
+                raise ApplicationCoolDownError(
+                    user_application.decision_date + timedelta(30),
+                )
             raise ApplicationWrongStatusError

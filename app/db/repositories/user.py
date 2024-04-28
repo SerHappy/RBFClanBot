@@ -45,6 +45,15 @@ class UserRepository(Repository[UserModel]):
         logger.debug(f"Создан пользователь с id={user.id}")
         return user
 
+    async def update_ban_status(self, user: UserEntity) -> UserEntity:
+        """Update user ban status."""
+        query = (
+            update(self.model).filter_by(id=user.id).values(is_banned=user.is_banned)
+        )
+        await self.session.execute(query)
+
+        return user
+
     async def get_by_id(self, user_id: int) -> UserEntity | None:
         """Get user by id."""
         stmt = select(self.model).filter_by(id=user_id)
