@@ -16,7 +16,8 @@ from app.domain.application_answers.entities import ApplicationAnswer
 
 
 class Application:
-    """Represents an application domain object.
+    """
+    Represents an application domain object.
 
     Provides methods to change status, manage the answers.
     """

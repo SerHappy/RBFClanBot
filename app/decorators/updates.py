@@ -15,7 +15,7 @@ def check_application_update(
     def decorator(update_func: Callable):
         @wraps(update_func)
         async def wrapper(
-            update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs
+            update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs,
         ):
             logger.debug(
                 f"Выполняется проверка правильности входящих сообщений при заполнении анкеты для обработчика {update_func.__name__}.",
@@ -39,14 +39,14 @@ def check_application_update(
             )
             if return_full_user:
                 logger.debug(
-                    f"Вызываем обработчик {update_func.__name__} с полным user."
+                    f"Вызываем обработчик {update_func.__name__} с полным user.",
                 )
                 return await update_func(
-                    user=user, chat=chat, message=message, context=context
+                    user=user, chat=chat, message=message, context=context,
                 )
             logger.debug(f"Вызываем обработчик {update_func.__name__} с user_id.")
             return await update_func(
-                user_id=user.id, chat=chat, message=message, context=context
+                user_id=user.id, chat=chat, message=message, context=context,
             )
 
         return wrapper
@@ -63,16 +63,16 @@ def check_update_and_provide_data(
     def decorator(update_func: Callable):
         @wraps(update_func)
         async def wrapper(
-            update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs
+            update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs,
         ):
             logger.debug(
-                f"Выполняется проверка update и предоставление данных для обработчика {update_func.__name__}."
+                f"Выполняется проверка update и предоставление данных для обработчика {update_func.__name__}.",
             )
 
             chat = update.effective_chat
             if chat is None:
                 logger.critical(
-                    f"Получен некорректный chat при попытке вызова обработчика {update_func.__name__}."
+                    f"Получен некорректный chat при попытке вызова обработчика {update_func.__name__}.",
                 )
                 return ConversationHandler.END
 
@@ -81,13 +81,13 @@ def check_update_and_provide_data(
 
             if need_callback and callback is None:
                 logger.warning(
-                    f"Отсутствует callback при вызове обработчика {update_func.__name__}."
+                    f"Отсутствует callback при вызове обработчика {update_func.__name__}.",
                 )
                 return ConversationHandler.END
 
             if need_message and message is None:
                 logger.warning(
-                    f"Отсутствует message при вызове обработчика {update_func.__name__}."
+                    f"Отсутствует message при вызове обработчика {update_func.__name__}.",
                 )
                 return ConversationHandler.END
 

@@ -29,7 +29,7 @@ class EnsureUserExistsService:
 
     async def _get_user(self, user_id: int) -> User | None:
         async with self._uow():
-            return await self._uow.user.get_by_id(user_id)
+            return await self._uow.user.retrieve(user_id)
 
     async def _create_user(self, data: UserDTO) -> User:
         async with self._uow():

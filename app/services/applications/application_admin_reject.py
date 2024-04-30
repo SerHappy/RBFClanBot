@@ -40,9 +40,7 @@ class ApplicationAdminRejectService:
                 logger.error("Попытка отклонить заявку с неверным статусом.")
                 raise ApplicationWrongStatusError
             application.reject(rejection_reason)
-            await self._uow.application.update_status(application)
-            await self._uow.application.add_reject_reason(application)
-            await self._uow.application.add_decision_date(application)
-            await self._uow.admin_processing_application.delete(admin_id)
+            await self._uow.application.update(application)
+            await self._uow.admin_processing_application.delete(admin_application)
             await self._uow.commit()
             return application

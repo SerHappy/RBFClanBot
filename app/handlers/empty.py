@@ -7,7 +7,8 @@ async def unknown_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,  # noqa: ARG001
 ) -> None:
-    """Обработчик неизвестных команд.
+    """
+    Обработчик неизвестных команд.
 
     Args:
     ----

@@ -19,7 +19,8 @@ class UserRepository(Repository[UserModel]):
         super().__init__(type_model=UserModel, session=session)
 
     async def create(self, user: UserEntity) -> UserEntity:
-        """Создание пользователя.
+        """
+        Создание пользователя.
 
         Args:
         ----
@@ -45,59 +46,53 @@ class UserRepository(Repository[UserModel]):
         logger.debug(f"Создан пользователь с id={user.id}")
         return user
 
-    async def update_ban_status(self, user: UserEntity) -> UserEntity:
-        """Update user ban status."""
+    async def update(self, user: UserEntity) -> UserEntity:
+        """
+        Update the user data in the database based on the provided user.
+
+        Args:
+        ----
+            user: The user entity instance containing updated fields that
+            need to be persisted in the database.
+
+        Returns:
+        -------
+            The updated user.
+
+        """
         query = (
-            update(self.model).filter_by(id=user.id).values(is_banned=user.is_banned)
+            update(self.model)
+            .filter_by(id=user.id)
+            .values(
+                username=user.username,
+                first_name=user.first_name,
+                last_name=user.last_name,
+                is_banned=user.is_banned,
+            )
         )
         await self.session.execute(query)
 
         return user
 
-    async def get_by_id(self, user_id: int) -> UserEntity | None:
-        """Get user by id."""
+    async def retrieve(self, user_id: int) -> UserEntity:
+        """
+        Retrieve the user from database based on the provided Telegram ID.
+
+        Args:
+        ----
+            user_id: Telegram ID of the user.
+
+        Returns:
+        -------
+            The user.
+
+        """
         stmt = select(self.model).filter_by(id=user_id)
 
-        res = (await self.session.execute(stmt)).scalar_one_or_none()
+        res = (await self.session.execute(stmt)).scalar_one()
 
-        if res is None:
-            return None
+        return self._get_user(res)
 
-        user_dto = UserDTO(
-            id=res.id,
-            username=res.username,
-            first_name=res.first_name,
-            last_name=res.last_name,
-            is_banned=res.is_banned,
-        )
-        return UserEntity(user_dto)
-
-    async def is_user_banned(self, user_id: int) -> bool:
-        """Проверка забанен ли пользователь."""
-        user = await self.get(user_id)
-        if not user:
-            logger.error(f"Пользователь с id={user_id} не найден при проверке бана.")
-            return False
-        return user.is_banned
-
-    async def ban_user(self, user_id: int):
-        """Забанить пользователя."""
-        user = await self.get(user_id)
-        if not user:
-            logger.error(f"Пользователь с id={user_id} не найден при попытке бане.")
-            return
-        await self.session.execute(
-            update(UserModel).where(UserModel.id == user_id).values(is_banned=True),
-        )
-        logger.info(f"Пользователь id={user_id} был забанен.")
-
-    async def unban_user(self, user_id: int):
-        """Разбанить пользователя."""
-        user = await self.get(user_id)
-        if not user:
-            logger.error(f"Пользователь с id={user_id} не найден при попытке разбана.")
-            return
-        await self.session.execute(
-            update(UserModel).where(UserModel.id == user_id).values(is_banned=False),
-        )
-        logger.info(f"Пользователь id={user_id} был разбанен.")
+    def _get_user(self, obj: UserModel) -> UserEntity:
+        data = UserDTO.model_validate(obj)
+        return UserEntity(data)

@@ -1,9 +1,9 @@
-from dataclasses import dataclass
-from enum import StrEnum
+from pydantic import BaseModel
+
+from app.services.applications.value_objects import ApplicationResponseStatusEnum
 
 
-@dataclass
-class ApplicationResponseDTO:
+class ApplicationResponseInputDTO(BaseModel):
     """DTO for application response."""
 
     user_id: int
@@ -11,20 +11,7 @@ class ApplicationResponseDTO:
     question_number: int
 
 
-class ApplicationResponseStatusEnum(StrEnum):
-    """Enum for application response status."""
-
-    NEW = "NEW"
-    UPDATE = "UPDATE"
-
-
-@dataclass
-class ApplicationResponseOutputStatusDTO:
+class ApplicationResponseOutputStatusDTO(BaseModel):
     """DTO for application response output status."""
 
     status: ApplicationResponseStatusEnum
-
-
-@dataclass
-class ApplicationUserDecisionInputDTO:
-    """DTO for application user decision input."""

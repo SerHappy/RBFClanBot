@@ -9,7 +9,8 @@ from telegram import (
 
 
 def ADMIN_DECISION_KEYBOARD(application_id: int) -> InlineKeyboardMarkup:  # noqa: N802
-    """Создание клавиатуры для администраторов.
+    """
+    Создание клавиатуры для администраторов.
 
     Args:
     ----
@@ -42,7 +43,8 @@ def ADMIN_DECISION_KEYBOARD(application_id: int) -> InlineKeyboardMarkup:  # noq
 
 
 def ADMIN_HANDLE_APPLICATION_KEYBOARD(application_id: int) -> InlineKeyboardMarkup:  # noqa: N802
-    """Создание клавиатуры для взятия заявки в обработку.
+    """
+    Создание клавиатуры для взятия заявки в обработку.
 
     Args:
     ----

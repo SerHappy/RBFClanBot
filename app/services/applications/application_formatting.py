@@ -50,7 +50,8 @@ class ApplicationFormattingService:
         return message
 
     def _escape_markdown(self, text: str) -> str:
-        """Экранирует специальные символы для MarkdownV2.
+        """
+        Экранирует специальные символы для MarkdownV2.
 
         Args:
         ----

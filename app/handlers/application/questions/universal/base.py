@@ -5,7 +5,7 @@ from app.handlers.application.questions.universal.dto import QuestionResponseDTO
 from app.services.applications.application_overview import ApplicationOverviewService
 from app.services.applications.application_response import ApplicationResponseService
 from app.services.applications.dto import (
-    ApplicationResponseDTO,
+    ApplicationResponseInputDTO,
     ApplicationResponseStatusEnum,
 )
 
@@ -15,7 +15,7 @@ async def handle_question(data: QuestionResponseDTO) -> int:
     """Universal question handler."""
     uow = UnitOfWork()
     application_response_service = ApplicationResponseService(uow)
-    response_data = ApplicationResponseDTO(
+    response_data = ApplicationResponseInputDTO(
         user_id=data.user_id,
         answer_text=data.message_text,
         question_number=data.question_number,

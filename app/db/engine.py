@@ -17,7 +17,8 @@ from app.db.repositories.user import UserRepository
 
 
 def _create_db_engine() -> AsyncEngine:
-    """Создание подключения к базе данных.
+    """
+    Создание подключения к базе данных.
 
     Args:
     ----
@@ -49,7 +50,8 @@ class UnitOfWork:
         return self
 
     async def __aenter__(self) -> "UnitOfWork":
-        """Enter the unit of work.
+        """
+        Enter the unit of work.
 
         Initialize the session and repositories.
         """

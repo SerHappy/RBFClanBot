@@ -7,7 +7,8 @@ from .base import Base
 
 
 class ApplicationAnswer(Base):
-    """Модель ответов на вопросы.
+    """
+    Модель ответов на вопросы.
 
     Название таблицы: application_answers
 

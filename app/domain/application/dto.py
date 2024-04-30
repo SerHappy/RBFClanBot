@@ -1,12 +1,14 @@
-from dataclasses import dataclass
 from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict
 
 from app.domain.application.value_objects import ApplicationStatusEnum
 
 
-@dataclass(kw_only=True)
-class ApplicationDTO:
+class ApplicationDTO(BaseModel):
     """Data transfer object for an application."""
+
+    model_config = ConfigDict(from_attributes=True)
 
     id: int
     user_id: int

@@ -1,6 +1,7 @@
 from loguru import logger
 
 from app.db.engine import UnitOfWork
+from app.domain.admin_processing_application.dto import AdminProcessingApplicationDTO
 from app.domain.admin_processing_application.entities import AdminProcessingApplication
 from app.domain.admin_processing_application.exceptions import (
     AdminAlreadyProcessedApplicationError,
@@ -46,12 +47,15 @@ class ApplicationAdminTakeService:
                 )
                 raise AdminAlreadyProcessedApplicationError
             application.take(admin_id)
-            await self._uow.application.update_status(application)
+            await self._uow.application.update(application)
+            admin_application = AdminProcessingApplication(
+                data=AdminProcessingApplicationDTO(
+                    admin_id=admin_id,
+                    application_id=application_id,
+                ),
+            )
             admin_processing_application = (
-                await self._uow.admin_processing_application.create(
-                    admin_id,
-                    application_id,
-                )
+                await self._uow.admin_processing_application.create(admin_application)
             )
             await self._uow.commit()
             return admin_processing_application

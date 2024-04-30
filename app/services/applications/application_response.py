@@ -8,10 +8,10 @@ from app.domain.application.exceptions import (
 from app.domain.application_answers.dto import AnswerDTO
 from app.domain.application_answers.entities import ApplicationAnswer
 from app.services.applications.dto import (
-    ApplicationResponseDTO,
+    ApplicationResponseInputDTO,
     ApplicationResponseOutputStatusDTO,
-    ApplicationResponseStatusEnum,
 )
+from app.services.applications.value_objects import ApplicationResponseStatusEnum
 
 
 class ApplicationResponseService:
@@ -23,7 +23,7 @@ class ApplicationResponseService:
 
     async def execute(
         self,
-        data: ApplicationResponseDTO,
+        data: ApplicationResponseInputDTO,
     ) -> ApplicationResponseOutputStatusDTO:
         """Execute the application response service."""
         async with self._uow():
@@ -42,22 +42,14 @@ class ApplicationResponseService:
             answer = ApplicationAnswer(answer_dto)
             try:
                 user_application.add_new_answer(answer)
-                await self._uow.application_answer.create(
-                    user_application.id,
-                    data.question_number,
-                    data.answer_text,
-                )
+                await self._uow.application_answer.add_answer(answer)
                 await self._uow.commit()
                 return ApplicationResponseOutputStatusDTO(
                     status=ApplicationResponseStatusEnum.NEW,
                 )
             except ApplicationAnswerAlreadyExistError:
                 user_application.update_answer(answer)
-                await self._uow.application_answer.update_question_answer(
-                    user_application.id,
-                    data.question_number,
-                    data.answer_text,
-                )
+                await self._uow.application_answer.update_answer(answer)
                 await self._uow.commit()
                 return ApplicationResponseOutputStatusDTO(
                     status=ApplicationResponseStatusEnum.UPDATE,

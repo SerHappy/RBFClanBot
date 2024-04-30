@@ -26,7 +26,8 @@ class User:
         self.is_banned = False
 
     def check_is_user_banned(self) -> None:
-        """Check if the user is banned.
+        """
+        Check if the user is banned.
 
         Raises
         ------

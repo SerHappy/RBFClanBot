@@ -14,6 +14,6 @@ class ApplicationCompleteService:
         async with self._uow():
             user_application = await self._uow.application.retrieve_last(user_id)
             user_application.complete()
-            await self._uow.application.update_status(user_application)
+            await self._uow.application.update(user_application)
             await self._uow.commit()
             return user_application

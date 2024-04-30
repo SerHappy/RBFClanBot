@@ -9,7 +9,8 @@ from .base import Base
 
 
 class Application(Base):
-    """Модель заявок от пользователей.
+    """
+    Модель заявок от пользователей.
 
     Название таблицы: applications
 

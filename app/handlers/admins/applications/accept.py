@@ -95,7 +95,8 @@ async def accept_application(
 
 
 async def _generate_invite_link(bot: ExtBot) -> str:
-    """Генерирует и возвращает ссылку на приглашение.
+    """
+    Генерирует и возвращает ссылку на приглашение.
 
     Args:
     ----

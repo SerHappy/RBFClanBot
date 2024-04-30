@@ -1,9 +1,10 @@
-from dataclasses import dataclass
+from pydantic import BaseModel, ConfigDict
 
 
-@dataclass
-class UserDTO:
+class UserDTO(BaseModel):
     """Data transfer object for User model."""
+
+    model_config = ConfigDict(from_attributes=True)
 
     id: int
     username: str | None

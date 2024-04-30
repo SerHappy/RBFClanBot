@@ -1,13 +1,11 @@
-from dataclasses import dataclass
-
+from pydantic import BaseModel
 from telegram import ReplyKeyboardMarkup
 from telegram.ext import ExtBot
 
 from app.config.states import ApplicationStates
 
 
-@dataclass
-class QuestionResponseDTO:
+class QuestionResponseDTO(BaseModel):
     """DTO for question response."""
 
     bot: ExtBot

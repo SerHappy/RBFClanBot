@@ -16,7 +16,8 @@ from app.domain.user.exceptions import UserIsBannedError, UserNotFoundError
 
 
 class ApplicationStartService:
-    """Responsible for application start.
+    """
+    Responsible for application start.
 
     It checks if the user is available to fill the application.
     """
@@ -29,7 +30,7 @@ class ApplicationStartService:
     async def execute(self, user_id: int) -> Application:
         """Execute the application start service."""
         async with self._uow():
-            user = await self._uow.user.get_by_id(user_id)
+            user = await self._uow.user.retrieve(user_id)
             if not user:
                 raise UserNotFoundError
             if user.is_banned:
@@ -44,7 +45,7 @@ class ApplicationStartService:
                 return user_application
             if user_application.status == ApplicationStatusEnum.IN_PROGRESS:
                 user_application.clear()
-                await self._uow.application_answer.delete_all_answers_by_application_id(
+                await self._uow.application.delete_answers(
                     user_application.id,
                 )
                 await self._uow.commit()

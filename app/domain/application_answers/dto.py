@@ -1,9 +1,10 @@
-from dataclasses import dataclass
+from pydantic import BaseModel, ConfigDict
 
 
-@dataclass
-class AnswerDTO:
+class AnswerDTO(BaseModel):
     """Data transfer object for application answers."""
+
+    model_config = ConfigDict(from_attributes=True)
 
     application_id: int
     question_number: int

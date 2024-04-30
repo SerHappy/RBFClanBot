@@ -31,7 +31,8 @@ async def start_command(  # noqa: PLR0911
     context: ContextTypes.DEFAULT_TYPE,  # noqa: ARG001
     message: Message | None = None,  # noqa: ARG001
 ) -> int | None:
-    """Входная точка для заполнения анкеты.
+    """
+    Входная точка для заполнения анкеты.
 
     Вызывается при вызове команды /start.
     """
@@ -98,7 +99,8 @@ async def start_command(  # noqa: PLR0911
 
 
 async def _send_greeting(chat: Chat) -> None:
-    """Отправить приветственное сообщение в чат.
+    """
+    Отправить приветственное сообщение в чат.
 
     Args:
     ----
@@ -121,7 +123,8 @@ async def _send_greeting(chat: Chat) -> None:
 
 
 async def _ask_for_pubg_id(chat: Chat) -> None:
-    """Запросить ответ на pubg_id.
+    """
+    Запросить ответ на pubg_id.
 
     Args:
     ----

@@ -16,6 +16,8 @@ loguru = "^0.7.2"
 uvloop = "^0.19.0"
 pydantic-settings = "^2.2.1"
 aiofiles = "^23.2.1"
+pydantic = "^2.7.1"
+pyright = "^1.1.360"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -37,6 +39,8 @@ ignore = [
     "TD002",
     "RUF001",
     "RUF002",
+    "D203",
+    "D212",
 ]
 
 [build-system]
