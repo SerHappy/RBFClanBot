@@ -1,9 +1,9 @@
-from models import Application
 from sqlalchemy import delete, select, update
 from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.db.repositories.abstract import Repository
 from app.domain.application.dto import ApplicationDTO
 from app.domain.application.entities import Application as ApplicationEntity
 from app.domain.application.exceptions import (
@@ -12,8 +12,7 @@ from app.domain.application.exceptions import (
 )
 from app.domain.application_answers.dto import AnswerDTO
 from app.domain.application_answers.entities import ApplicationAnswer
-
-from .abstract import Repository
+from app.models import Application
 
 
 class ApplicationRepository(Repository[Application]):

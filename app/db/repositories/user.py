@@ -1,14 +1,13 @@
 from loguru import logger
-from models import User as UserModel
 from sqlalchemy import insert, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.repositories.abstract import Repository
 from app.domain.user.dto import UserDTO
 from app.domain.user.entities import User as UserEntity
 from app.domain.user.exceptions import UserAlreadyExistsError
-
-from .abstract import Repository
+from app.models import User as UserModel
 
 
 class UserRepository(Repository[UserModel]):

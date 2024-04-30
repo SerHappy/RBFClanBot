@@ -1,7 +1,7 @@
-from decorators import updates
 from telegram import Chat, Message
 from telegram.ext import ContextTypes
 
+from app.decorators import updates
 from app.handlers.application.questions.universal.base import handle_question
 from app.handlers.application.questions.universal.dto import QuestionResponseDTO
 

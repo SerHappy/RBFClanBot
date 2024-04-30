@@ -1,10 +1,10 @@
-from decorators import updates
 from loguru import logger
 from telegram import CallbackQuery, Chat
 from telegram.ext import ContextTypes, ConversationHandler
 
 from app import keyboards
 from app.db.engine import UnitOfWork
+from app.decorators import updates
 from app.domain.admin_processing_application.exceptions import (
     AdminAlreadyProcessedApplicationError,
     ApplicationAlreadyProcessedError,

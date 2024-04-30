@@ -1,12 +1,12 @@
-from config import ApplicationStates
-from decorators import updates
 from loguru import logger
 from telegram import Chat, Message
 from telegram.ext import ContextTypes
-from validators import question_validators
 
+from app.decorators import updates
 from app.handlers.application.questions.universal.base import handle_question
 from app.handlers.application.questions.universal.dto import QuestionResponseDTO
+from app.handlers.config import ApplicationStates
+from app.validators import question_validators
 
 
 @updates.check_application_update()

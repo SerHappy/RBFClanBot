@@ -1,11 +1,11 @@
-from domain.application_answers.entities import (
-    ApplicationAnswer as ApplicationAnswerEntity,
-)
-from models import ApplicationAnswer
 from sqlalchemy import insert, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .abstract import Repository
+from app.db.repositories.abstract import Repository
+from app.domain.application_answers.entities import (
+    ApplicationAnswer as ApplicationAnswerEntity,
+)
+from app.models import ApplicationAnswer
 
 
 class ApplicationAnswerRepository(Repository[ApplicationAnswer]):

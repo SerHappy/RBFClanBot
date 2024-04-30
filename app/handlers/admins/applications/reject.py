@@ -1,19 +1,19 @@
 from datetime import timedelta
 
-import keyboards
-from config import DeclineUserStates
-from core.config import settings
-from decorators import updates
 from loguru import logger
 from telegram import CallbackQuery, Chat, Message
 from telegram.ext import CallbackContext, ContextTypes, ConversationHandler
 
+from app import keyboards
+from app.core.config import settings
 from app.db.engine import UnitOfWork
+from app.decorators import updates
 from app.domain.admin_processing_application.exceptions import (
     ApplicationAlreadyProcessedError,
     WrongAdminError,
 )
 from app.domain.application.exceptions import ApplicationWrongStatusError
+from app.handlers.config import DeclineUserStates
 from app.services.applications.application_admin_reject import (
     ApplicationAdminRejectService,
 )

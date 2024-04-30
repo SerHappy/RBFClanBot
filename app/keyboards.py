@@ -1,4 +1,3 @@
-from config import Callbacks
 from telegram import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
@@ -6,6 +5,8 @@ from telegram import (
     ReplyKeyboardMarkup,
     ReplyKeyboardRemove,
 )
+
+from app.handlers.config import Callbacks
 
 
 def ADMIN_DECISION_KEYBOARD(application_id: int) -> InlineKeyboardMarkup:  # noqa: N802

@@ -15,7 +15,10 @@ def check_application_update(
     def decorator(update_func: Callable):
         @wraps(update_func)
         async def wrapper(
-            update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs,
+            update: Update,
+            context: ContextTypes.DEFAULT_TYPE,
+            *args,
+            **kwargs,
         ):
             logger.debug(
                 f"Выполняется проверка правильности входящих сообщений при заполнении анкеты для обработчика {update_func.__name__}.",
@@ -42,11 +45,17 @@ def check_application_update(
                     f"Вызываем обработчик {update_func.__name__} с полным user.",
                 )
                 return await update_func(
-                    user=user, chat=chat, message=message, context=context,
+                    user=user,
+                    chat=chat,
+                    message=message,
+                    context=context,
                 )
             logger.debug(f"Вызываем обработчик {update_func.__name__} с user_id.")
             return await update_func(
-                user_id=user.id, chat=chat, message=message, context=context,
+                user_id=user.id,
+                chat=chat,
+                message=message,
+                context=context,
             )
 
         return wrapper
@@ -63,7 +72,10 @@ def check_update_and_provide_data(
     def decorator(update_func: Callable):
         @wraps(update_func)
         async def wrapper(
-            update: Update, context: ContextTypes.DEFAULT_TYPE, *args, **kwargs,
+            update: Update,
+            context: ContextTypes.DEFAULT_TYPE,
+            *args,
+            **kwargs,
         ):
             logger.debug(
                 f"Выполняется проверка update и предоставление данных для обработчика {update_func.__name__}.",

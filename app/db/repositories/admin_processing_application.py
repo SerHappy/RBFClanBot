@@ -1,9 +1,9 @@
 from loguru import logger
-from models import AdminProcessingApplication
 from sqlalchemy import delete, insert, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.repositories.abstract import Repository
 from app.domain.admin_processing_application.dto import AdminProcessingApplicationDTO
 from app.domain.admin_processing_application.entities import (
     AdminProcessingApplication as AdminProcessingApplicationEntity,
@@ -11,8 +11,7 @@ from app.domain.admin_processing_application.entities import (
 from app.domain.admin_processing_application.exceptions import (
     ApplicationAlreadyProcessedError,
 )
-
-from .abstract import Repository
+from app.models import AdminProcessingApplication
 
 
 class AdminProcessingApplicationRepository(Repository[AdminProcessingApplication]):

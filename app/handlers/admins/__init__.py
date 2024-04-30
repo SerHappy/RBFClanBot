@@ -1,4 +1,3 @@
-from config import Callbacks, DeclineUserStates
 from telegram.ext import (
     Application,
     CallbackQueryHandler,
@@ -9,17 +8,17 @@ from telegram.ext import (
 )
 
 from app.core.config import settings
-
-from .applications.accept import accept_application
-from .applications.reject import (
+from app.handlers.admins.applications.accept import accept_application
+from app.handlers.admins.applications.reject import (
     reject_application_start,
     reject_back_button_handler,
     reject_reason_hander,
 )
-from .applications.take import take_application_handler
-from .shutdown import shutdown_handler
-from .users.ban import ban_user
-from .users.unban import unban_user
+from app.handlers.admins.applications.take import take_application_handler
+from app.handlers.admins.shutdown import shutdown_handler
+from app.handlers.admins.users.ban import ban_user
+from app.handlers.admins.users.unban import unban_user
+from app.handlers.config import Callbacks, DeclineUserStates
 
 
 # TODO: Разнести по __init__ файлам

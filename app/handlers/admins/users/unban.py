@@ -1,12 +1,12 @@
-from core.config import settings
 from loguru import logger
 from telegram import Update
 from telegram.ext import ContextTypes, ConversationHandler
-from validators import question_validators
 
+from app.core.config import settings
 from app.db.engine import UnitOfWork
 from app.domain.user.exceptions import UserIsNotBannedError, UserNotFoundError
 from app.services.users.user_unban import UserUnbanService
+from app.validators import question_validators
 
 
 async def unban_user(

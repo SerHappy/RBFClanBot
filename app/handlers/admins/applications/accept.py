@@ -1,10 +1,10 @@
-from core.config import settings
-from decorators import updates
 from loguru import logger
 from telegram import CallbackQuery, Chat, ChatInviteLink
 from telegram.ext import ContextTypes, ExtBot
 
+from app.core.config import settings
 from app.db.engine import UnitOfWork
+from app.decorators import updates
 from app.domain.admin_processing_application.exceptions import (
     ApplicationAlreadyProcessedError,
     WrongAdminError,

@@ -6,8 +6,8 @@ from telegram.ext import (
     filters,
 )
 
-from app.config import ApplicationStates
 from app.handlers.application.questions import about, activity, age, game_mode, pubg_id
+from app.handlers.config import ApplicationStates
 from app.handlers.empty import unknown_handler
 
 from .finish import user_decision

@@ -1,9 +1,8 @@
-import keyboards
 from loguru import logger
 from telegram import Chat, Message, User, constants
 from telegram.ext import ContextTypes, ConversationHandler
 
-from app.config import ApplicationStates
+from app import keyboards
 from app.db import UnitOfWork
 from app.decorators import updates
 from app.domain.application.exceptions import (
@@ -16,6 +15,7 @@ from app.domain.application.exceptions import (
 from app.domain.user.exceptions import (
     UserIsBannedError,
 )
+from app.handlers.config import ApplicationStates
 from app.services.applications.application_start import ApplicationStartService
 from app.services.users.dto import UserCreateDTO
 from app.services.users.user_create import EnsureUserExistsService

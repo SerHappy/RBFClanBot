@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict
 from telegram import ReplyKeyboardMarkup
 from telegram.ext import ExtBot
 
-from app.config.states import ApplicationStates
+from app.handlers.config.states import ApplicationStates
 
 
 class QuestionResponseDTO(BaseModel):

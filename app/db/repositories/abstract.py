@@ -1,7 +1,8 @@
 from typing import Generic, TypeVar
 
-from models import Base
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models import Base
 
 AbstractModel = TypeVar("AbstractModel", bound=Base)
 

@@ -1,12 +1,12 @@
-from decorators import updates
 from loguru import logger
 from telegram import Chat, Message
 from telegram.ext import ContextTypes, ConversationHandler, ExtBot
 
 from app import keyboards
-from app.config.states import ApplicationStates
 from app.core.config import settings
 from app.db.engine import UnitOfWork
+from app.decorators import updates
+from app.handlers.config.states import ApplicationStates
 from app.services.applications.application_complete import (
     ApplicationCompleteService,
 )
