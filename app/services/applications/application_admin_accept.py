@@ -1,6 +1,6 @@
-from db.engine import UnitOfWork
 from loguru import logger
 
+from app.db.engine import UnitOfWork
 from app.domain.admin_processing_application.exceptions import (
     ApplicationAlreadyProcessedError,
     WrongAdminError,

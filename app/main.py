@@ -1,11 +1,12 @@
 from pathlib import Path
 
-import handlers
-import handlers.error
 import uvloop
-from core.config import settings
 from loguru import logger
 from telegram.ext import Application, ApplicationBuilder
+
+from app import handlers
+from app.core.config import settings
+from app.handlers import error
 
 
 def main() -> None:
@@ -57,7 +58,7 @@ def _start_bot() -> None:
     )
     logger.debug("Создание приложения прошло успешно.")
     handlers.add_all_handlers(application)
-    application.add_error_handler(handlers.error.error_handler)
+    application.add_error_handler(error.error_handler)
     logger.debug("Добавление обработчиков прошло успешно.")
     logger.info("Бот запущен")
     application.run_polling(drop_pending_updates=True)

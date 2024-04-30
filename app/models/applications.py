@@ -4,8 +4,7 @@ from sqlalchemy import TIMESTAMP, BigInteger, ForeignKey, String, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.domain.application.value_objects import ApplicationStatusEnum
-
-from .base import Base
+from app.models.base import Base
 
 
 class Application(Base):
