@@ -1,25 +1,22 @@
-# Используй официальный образ Python с нужной версией
-FROM python:3.11.8-slim
+FROM python:3.12.3-slim
 
-# Установка Poetry
-ENV POETRY_VERSION=1.8.2
-RUN pip install "poetry==$POETRY_VERSION"
+WORKDIR /app/
 
-# Копирование только необходимых файлов для установки зависимостей
-WORKDIR /app
-COPY pyproject.toml poetry.lock ./
+RUN apt-get update && apt-get install -y curl
 
-# Отключаем виртуальное окружение poetry и устанавливаем зависимости
-RUN poetry install --without dev
+# Install Poetry
+RUN curl -sSL https://install.python-poetry.org | POETRY_HOME=/opt/poetry python && \
+    cd /usr/local/bin && \
+    ln -s /opt/poetry/bin/poetry && \
+    poetry config virtualenvs.create false
 
-# Копирование остальных файлов проекта
-COPY . /app
+COPY ./pyproject.toml ./poetry.lock* /app/
 
-# Создание директории для логов, если она не существует
-RUN mkdir -p /app/app/logs
+ARG INSTALL_DEV=false
+RUN bash -c "if [ $INSTALL_DEV == 'true' ] ; then poetry install --no-root ; else poetry install --no-root --only main ; fi"
 
-# Объявление тома для логов
-VOLUME /app/app/logs
+ENV PYTHONPATH=/app
 
-# Команда для запуска приложения
-CMD ["poetry", "run", "python", "./app/main.py"]
+COPY ./alembic.ini /app/
+
+COPY ./app /app/app
