@@ -24,6 +24,11 @@ class ApplicationCompleteService:
         Args:
             user_id (int): Telegram ID of the user.
 
+        Raises:
+            ApplicationDoesNotExistError: If the application does not exist.
+            ApplicationDoesNotCompeteError: If the application does not complete.
+            ChangeApplicationStatusError: If the current status is wrong.
+
         Returns:
             Application: Completed application.
         """

@@ -26,6 +26,9 @@ class ApplicationFormattingService:
         Args:
             application_id (int): Telegram ID of the user.
 
+        Raises:
+            ApplicationDoesNotExistError: If the application does not exist.
+
         Returns:
             str: Formatted application.
         """

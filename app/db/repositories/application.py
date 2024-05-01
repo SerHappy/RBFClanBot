@@ -69,7 +69,10 @@ class ApplicationRepository(Repository[Application]):
             .options(selectinload(Application.answers))
             .filter_by(id=application_id)
         )
-        res = (await self.session.execute(stmt)).scalar_one()
+        try:
+            res = (await self.session.execute(stmt)).scalar_one()
+        except NoResultFound as e:
+            raise ApplicationDoesNotExistError from e
         return self._get_application_entity(res)
 
     async def retrieve_last(self, user_id: int) -> ApplicationEntity:
@@ -78,6 +81,9 @@ class ApplicationRepository(Repository[Application]):
 
         Args:
             user_id (int): The user id.
+
+        Raises:
+            ApplicationDoesNotExistError: If the application does not exist.
 
         Returns:
             ApplicationEntity: The application.

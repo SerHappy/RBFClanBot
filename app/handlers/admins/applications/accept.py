@@ -9,7 +9,7 @@ from app.domain.admin_processing_application.exceptions import (
     ApplicationAlreadyProcessedError,
     WrongAdminError,
 )
-from app.domain.application.exceptions import ApplicationWrongStatusError
+from app.domain.application.exceptions import ChangeApplicationStatusError
 from app.services.applications.application_admin_accept import (
     ApplicationAdminAcceptService,
 )
@@ -60,7 +60,7 @@ async def accept_application(
             show_alert=True,
         )
         return
-    except ApplicationWrongStatusError:
+    except ChangeApplicationStatusError:
         await callback.answer(
             "Неверный статус заявки.",
             show_alert=True,

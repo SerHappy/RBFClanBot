@@ -10,5 +10,9 @@ class AdminAlreadyProcessedApplicationError(BaseAdminProcessingApplicationError)
     """Exception raised when admin is already processed application."""
 
 
+class AdminProcessingApplicationDoesNotExistError(BaseAdminProcessingApplicationError):
+    """Exception raised when admin processing application does not exist."""
+
+
 class WrongAdminError(BaseAdminProcessingApplicationError):
     """Exception raised when admin is already processed application."""

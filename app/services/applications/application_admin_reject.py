@@ -2,12 +2,11 @@ from loguru import logger
 
 from app.db.engine import UnitOfWork
 from app.domain.admin_processing_application.exceptions import (
+    AdminProcessingApplicationDoesNotExistError,
     ApplicationAlreadyProcessedError,
     WrongAdminError,
 )
 from app.domain.application.entities import Application
-from app.domain.application.exceptions import ApplicationWrongStatusError
-from app.domain.application.value_objects import ApplicationStatusEnum
 
 
 class ApplicationAdminRejectService:
@@ -39,24 +38,29 @@ class ApplicationAdminRejectService:
             application_id (int): Telegram ID of the application.
             rejection_reason (str): The reason for rejection.
 
+        Raises:
+            ApplicationAlreadyProcessedError: If the application is already processed.
+            WrongAdminError: If the admin is not the same as the application.
+            ChangeApplicationStatusError: If the current status is wrong.
+
         Returns:
             Application: The rejected application.
         """
         async with self._uow():
-            admin_application = (
-                await self._uow.admin_processing_application.get_by_admin_id(admin_id)
-            )
-            if admin_application is None:
-                raise ApplicationAlreadyProcessedError
+            try:
+                admin_application = (
+                    await self._uow.admin_processing_application.get_by_admin_id(
+                        admin_id,
+                    )
+                )
+            except AdminProcessingApplicationDoesNotExistError as e:
+                raise ApplicationAlreadyProcessedError from e
             if admin_application.application_id != application_id:
                 logger.error(
                     "Попытка отклонить заявку с неверным админом.",
                 )
                 raise WrongAdminError
             application = await self._uow.application.get_by_id(application_id)
-            if application.status != ApplicationStatusEnum.PROCESSING:
-                logger.error("Попытка отклонить заявку с неверным статусом.")
-                raise ApplicationWrongStatusError
             application.reject(rejection_reason)
             await self._uow.application.update(application)
             await self._uow.admin_processing_application.delete(admin_application)

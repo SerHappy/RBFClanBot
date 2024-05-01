@@ -4,6 +4,7 @@ from telegram.ext import ContextTypes, ExtBot
 
 from app.core.config import settings
 from app.db.engine import UnitOfWork
+from app.domain.application.exceptions import ApplicationDoesNotExistError
 from app.services.applications.application_retrieve import ApplicationRetrieveService
 
 
@@ -30,8 +31,9 @@ async def new_user_joined_handler(
         uow = UnitOfWork()
         application_service = ApplicationRetrieveService(uow)
         user_id = new_user.id
-        application = await application_service.execute(user_id)
-        if not application:
+        try:
+            application = await application_service.execute(user_id)
+        except ApplicationDoesNotExistError:
             logger.warning(
                 (
                     f"Пользователь {user_id} не имеет активной заявки. "

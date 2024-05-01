@@ -25,7 +25,7 @@ from app.services.users.user_create import EnsureUserExistsService
     return_error_state=ConversationHandler.END,
     return_full_user=True,
 )
-async def start_command(  # noqa: PLR0911
+async def start_command(
     user: User,
     chat: Chat,
     context: ContextTypes.DEFAULT_TYPE,  # noqa: ARG001
@@ -69,10 +69,11 @@ async def start_command(  # noqa: PLR0911
         ApplicationWrongStatusError,
     ):
         await chat.send_message(
-            "Что-то не так...\n"
+            "Что-то пошло не так...\n"
             "Свяжитесь с менеджером @RBFManager для решения этой проблемы.",
         )
-        return ConversationHandler.END
+        raise
+
     except UserIsBannedError:
         await chat.send_message(
             "Вы были заблокированы. Заполнение анкеты невозможно.",

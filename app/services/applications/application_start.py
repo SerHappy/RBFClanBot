@@ -12,7 +12,7 @@ from app.domain.application.exceptions import (
     ApplicationWrongStatusError,
 )
 from app.domain.application.value_objects import ApplicationStatusEnum
-from app.domain.user.exceptions import UserIsBannedError, UserNotFoundError
+from app.domain.user.exceptions import UserIsBannedError
 
 
 class ApplicationStartService:
@@ -42,46 +42,53 @@ class ApplicationStartService:
         Args:
             user_id (int): Telegram ID of the user.
 
+        Raises:
+            UserNotFoundError: If the user is not found.
+            ApplicationAtWaitingStatusError: If the application is in 'WAITING' status.
+            ApplicationAlreadyAcceptedError: If the application is in 'ACCEPTED' status.
+            ApplicationDecisionDateNotFoundError: If the application decision date
+            is not found.
+            ApplicationCoolDownError: If the application rejected less than 30 days ago.
+            ApplicationWrongStatusError: If the application status is wrong.
+
         Returns:
             Application: The application.
         """
         async with self._uow():
             user = await self._uow.user.retrieve(user_id)
-            if not user:
-                raise UserNotFoundError
             if user.is_banned:
                 raise UserIsBannedError
             try:
-                user_application = await self._uow.application.retrieve_last(
+                application = await self._uow.application.retrieve_last(
                     user_id,
                 )
             except ApplicationDoesNotExistError:
-                user_application = await self._uow.application.create(user_id)
+                application = await self._uow.application.create(user_id)
                 await self._uow.commit()
-                return user_application
-            if user_application.status == ApplicationStatusEnum.IN_PROGRESS:
-                user_application.clear()
+                return application
+            if application.status == ApplicationStatusEnum.IN_PROGRESS:
+                application.clear()
                 await self._uow.application.delete_answers(
-                    user_application.id,
+                    application.id,
                 )
                 await self._uow.commit()
-                return user_application
-            if user_application.status in (
+                return application
+            if application.status in (
                 ApplicationStatusEnum.WAITING,
                 ApplicationStatusEnum.PROCESSING,
             ):
                 raise ApplicationAtWaitingStatusError
-            if user_application.status == ApplicationStatusEnum.ACCEPTED:
+            if application.status == ApplicationStatusEnum.ACCEPTED:
                 raise ApplicationAlreadyAcceptedError
-            if user_application.status == ApplicationStatusEnum.REJECTED:
+            if application.status == ApplicationStatusEnum.REJECTED:
                 now = datetime.now(tz=dt.UTC)
-                if user_application.decision_date is None:
+                if application.decision_date is None:
                     raise ApplicationDecisionDateNotFoundError
-                if now - user_application.decision_date >= timedelta(days=30):
-                    user_application = await self._uow.application.create(user_id)
+                if now - application.decision_date >= timedelta(days=30):
+                    application = await self._uow.application.create(user_id)
                     await self._uow.commit()
-                    return user_application
+                    return application
                 raise ApplicationCoolDownError(
-                    user_application.decision_date + timedelta(30),
+                    application.decision_date + timedelta(30),
                 )
             raise ApplicationWrongStatusError

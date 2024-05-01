@@ -12,7 +12,9 @@ from app.domain.admin_processing_application.exceptions import (
     ApplicationAlreadyProcessedError,
     WrongAdminError,
 )
-from app.domain.application.exceptions import ApplicationWrongStatusError
+from app.domain.application.exceptions import (
+    ChangeApplicationStatusError,
+)
 from app.handlers.config import DeclineUserStates
 from app.services.applications.application_admin_reject import (
     ApplicationAdminRejectService,
@@ -108,7 +110,7 @@ async def reject_reason_hander(
             "Вы не можете принять данную заявку.",
         )
         return ConversationHandler.END
-    except ApplicationWrongStatusError:
+    except ChangeApplicationStatusError:
         await chat.send_message(
             "Неверный статус заявки.",
         )

@@ -23,6 +23,9 @@ class ApplicationOverviewService:
         Args:
             user_id (int): Telegram ID of the user.
 
+        Raises:
+            ApplicationDoesNotExistError: If the application does not exist.
+
         Returns:
             str: The application overview.
         """

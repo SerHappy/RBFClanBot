@@ -5,9 +5,8 @@ from app.domain.admin_processing_application.dto import AdminProcessingApplicati
 from app.domain.admin_processing_application.entities import AdminProcessingApplication
 from app.domain.admin_processing_application.exceptions import (
     AdminAlreadyProcessedApplicationError,
+    AdminProcessingApplicationDoesNotExistError,
 )
-from app.domain.application.exceptions import ApplicationWrongStatusError
-from app.domain.application.value_objects import ApplicationStatusEnum
 
 
 class ApplicationAdminTakeService:
@@ -37,25 +36,23 @@ class ApplicationAdminTakeService:
             admin_id (int): Telegram ID of the admin.
             application_id (int): Telegram ID of the application.
 
+        Raises:
+            ApplicationDoesNotExistError: If the application does not exist.
+            AdminAlreadyProcessedApplicationError: If the admin already processed
+            the application.
+            ChangeApplicationStatusError: If the current status is wrong.
+
         Returns:
             AdminProcessingApplication: The admin processing application.
         """
         async with self._uow():
             application = await self._uow.application.get_by_id(application_id)
-            if application.status != ApplicationStatusEnum.WAITING:
-                logger.error(
-                    (
-                        f"Попытка взять в обработку заявку {application_id=} "
-                        f"с неверным статусом {application.status=}"
-                    ),
+            try:
+                admin_processing_application = (
+                    await self._uow.admin_processing_application.get_by_admin_id(
+                        admin_id,
+                    )
                 )
-                raise ApplicationWrongStatusError
-            admin_processing_application = (
-                await self._uow.admin_processing_application.get_by_admin_id(
-                    admin_id,
-                )
-            )
-            if admin_processing_application:
                 logger.error(
                     (
                         f"Попытка взять в обработку заявку {application_id=} "
@@ -63,16 +60,19 @@ class ApplicationAdminTakeService:
                     ),
                 )
                 raise AdminAlreadyProcessedApplicationError
-            application.take(admin_id)
-            await self._uow.application.update(application)
-            admin_application = AdminProcessingApplication(
-                data=AdminProcessingApplicationDTO(
-                    admin_id=admin_id,
-                    application_id=application_id,
-                ),
-            )
-            admin_processing_application = (
-                await self._uow.admin_processing_application.create(admin_application)
-            )
-            await self._uow.commit()
-            return admin_processing_application
+            except AdminProcessingApplicationDoesNotExistError:
+                application.take(admin_id)
+                await self._uow.application.update(application)
+                admin_application = AdminProcessingApplication(
+                    data=AdminProcessingApplicationDTO(
+                        admin_id=admin_id,
+                        application_id=application_id,
+                    ),
+                )
+                admin_processing_application = (
+                    await self._uow.admin_processing_application.create(
+                        admin_application,
+                    )
+                )
+                await self._uow.commit()
+                return admin_processing_application

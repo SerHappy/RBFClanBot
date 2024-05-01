@@ -39,6 +39,9 @@ class ApplicationResponseService:
         Args:
             data (ApplicationResponseInputDTO): The data of the application response.
 
+        Raises:
+            ApplicationDoesNotExistError: If the application does not exist.
+
         Returns:
             ApplicationResponseOutputStatusDTO: The status of the application response.
         """
@@ -50,11 +53,7 @@ class ApplicationResponseService:
             except ApplicationDoesNotExistError as e:
                 logger.critical(f"Got answer for non-existent application: {e}")
                 raise
-            answer_dto = AnswerDTO(
-                application_id=user_application.id,
-                question_number=data.question_number,
-                answer_text=data.answer_text,
-            )
+            answer_dto = AnswerDTO(**data.model_dump())
             answer = ApplicationAnswer(answer_dto)
             try:
                 user_application.add_new_answer(answer)

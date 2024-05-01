@@ -1,6 +1,6 @@
 from loguru import logger
 from sqlalchemy import delete, insert, select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.repositories.abstract import Repository
@@ -9,6 +9,7 @@ from app.domain.admin_processing_application.entities import (
     AdminProcessingApplication as AdminProcessingApplicationEntity,
 )
 from app.domain.admin_processing_application.exceptions import (
+    AdminProcessingApplicationDoesNotExistError,
     ApplicationAlreadyProcessedError,
 )
 from app.models import AdminProcessingApplication
@@ -59,7 +60,7 @@ class AdminProcessingApplicationRepository(Repository[AdminProcessingApplication
     async def get_by_admin_id(
         self,
         admin_id: int,
-    ) -> AdminProcessingApplicationEntity | None:
+    ) -> AdminProcessingApplicationEntity:
         """
         Retrieve an AdminProcessingApplicationEntity by given admin_id.
 
@@ -71,10 +72,10 @@ class AdminProcessingApplicationRepository(Repository[AdminProcessingApplication
         """
         logger.debug(f"Получение обрабатываемой админом {admin_id=} заявки")
         query = select(self.model).filter_by(admin_id=admin_id)
-        res = (await self.session.execute(query)).scalar_one_or_none()
-        # TODO: Raise does not exist
-        if not res:
-            return None
+        try:
+            res = (await self.session.execute(query)).scalar_one()
+        except NoResultFound as e:
+            raise AdminProcessingApplicationDoesNotExistError from e
         return self._get_entity(res)
 
     async def delete(self, entity: AdminProcessingApplicationEntity) -> None:
