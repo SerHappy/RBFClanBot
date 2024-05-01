@@ -13,6 +13,7 @@ from app.domain.application.exceptions import (
 from app.domain.application_answers.dto import AnswerDTO
 from app.domain.application_answers.entities import ApplicationAnswer
 from app.models import Application
+from app.models import ApplicationAnswer as ApplicationAnswerModel
 
 
 class ApplicationRepository(Repository[Application]):
@@ -137,7 +138,7 @@ class ApplicationRepository(Repository[Application]):
         Returns:
             None
         """
-        query = delete(ApplicationAnswer).filter_by(
+        query = delete(ApplicationAnswerModel).filter_by(
             application_id=application_id,
         )
         await self.session.execute(query)

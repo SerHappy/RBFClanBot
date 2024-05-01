@@ -53,7 +53,10 @@ class ApplicationResponseService:
             except ApplicationDoesNotExistError as e:
                 logger.critical(f"Got answer for non-existent application: {e}")
                 raise
-            answer_dto = AnswerDTO(**data.model_dump())
+            answer_dto = AnswerDTO(
+                **data.model_dump(),
+                application_id=user_application.id,
+            )
             answer = ApplicationAnswer(answer_dto)
             try:
                 user_application.add_new_answer(answer)

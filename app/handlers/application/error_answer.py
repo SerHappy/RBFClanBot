@@ -3,12 +3,12 @@ from telegram import Update
 from telegram.ext import ContextTypes
 
 
-async def unknown_handler(
+async def fallback_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,  # noqa: ARG001
 ) -> None:
     """
-    Handle unknown command.
+    Handle unknown answer.
 
     Args:
         update: The update.
@@ -28,11 +28,9 @@ async def unknown_handler(
         return
     if chat.type != "private":
         return
-    logger.info(f"Получена неизвестная команда в чате chat_id={chat.id}.")
     await chat.send_message(
         (
-            "Неизвестный текст или команда.\n"
-            "Попробуйте перезапустить заполнение заявки, вызвав команду /start.\n"
+            "Неверный формат ответа.\n"
             "Если ошибка повторяется, обратитесь к менеджеру @RBFManager."
         ),
     )

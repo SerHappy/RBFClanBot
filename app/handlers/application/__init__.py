@@ -6,11 +6,11 @@ from telegram.ext import (
     filters,
 )
 
+from app.handlers.application.error_answer import fallback_handler
 from app.handlers.application.finish import user_decision
 from app.handlers.application.questions import about, activity, age, game_mode, pubg_id
 from app.handlers.application.start import start_command
 from app.handlers.config import ApplicationStates
-from app.handlers.empty import unknown_handler
 
 
 def register_application_handlers(application: Application) -> None:
@@ -46,6 +46,6 @@ def register_application_handlers(application: Application) -> None:
         },
         # TODO: Добавить хендлеры обработки ошибок
         # (пользователь оправил некорректные данные)
-        fallbacks=[MessageHandler(filters.ALL, unknown_handler)],
+        fallbacks=[MessageHandler(filters.ALL, fallback_handler)],
     )
     application.add_handler(conv_hander)
