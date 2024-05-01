@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import traceback
 from pathlib import Path
 
@@ -32,7 +33,11 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
     tb_string = "".join(tb_list)
     update_str = update.to_dict() if isinstance(update, Update) else str(update)
 
-    temp_file_path = f"temp_error_{os.urandom(4).hex()}.txt"
+    error_name = type(context.error).__name__
+
+    safe_error_name = re.sub(r"[^\w\d]", "_", error_name)
+
+    temp_file_path = f"{safe_error_name}_{os.urandom(4).hex()}.txt"
     async with aiofiles.open(temp_file_path, mode="w", encoding="utf-8") as tmp_file:
         await tmp_file.write("An exception was raised while handling an update\n")
         await tmp_file.write(
