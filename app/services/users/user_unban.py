@@ -25,6 +25,10 @@ class UserUnbanService:
         Args:
             user_id (int): Telegram ID of the user.
 
+        Raises:
+            UserNotFoundError: If the user is not found.
+            UserIsNotBannedError: If the user is not banned.
+
         Returns:
             User: Unbanned user.
         """

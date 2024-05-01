@@ -1,9 +1,7 @@
-from loguru import logger
-
 from app.db.engine import UnitOfWork
 from app.domain.user.dto import UserDTO
 from app.domain.user.entities import User
-from app.domain.user.exceptions import UserAlreadyExistsError
+from app.domain.user.exceptions import UserNotFoundError
 from app.services.users.dto import UserCreateDTO
 
 
@@ -32,27 +30,20 @@ class EnsureUserExistsService:
         Returns:
             User: The retrieved or created user.
         """
-        user = await self._get_user(data.id)
-        if not user:
-            user_dto = UserDTO(
-                id=data.id,
-                username=data.username,
-                first_name=data.first_name,
-                last_name=data.last_name,
-            )
+        try:
+            user = await self._get_user(data.id)
+        except UserNotFoundError:
+            user_dto = UserDTO(**data.model_dump())
             user = await self._create_user(user_dto)
         return user
 
-    async def _get_user(self, user_id: int) -> User | None:
+    async def _get_user(self, user_id: int) -> User:
         async with self._uow():
             return await self._uow.user.retrieve(user_id)
 
     async def _create_user(self, data: UserDTO) -> User:
         async with self._uow():
             user = User(data=data)
-            try:
-                user = await self._uow.user.create(user)
-                await self._uow.commit()
-            except UserAlreadyExistsError:
-                logger.info(f"User with id {data.id} already exists.")
+            user = await self._uow.user.create(user)
+            await self._uow.commit()
         return user

@@ -1,12 +1,12 @@
 from loguru import logger
 from sqlalchemy import insert, select, update
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.repositories.abstract import Repository
 from app.domain.user.dto import UserDTO
 from app.domain.user.entities import User as UserEntity
-from app.domain.user.exceptions import UserAlreadyExistsError
+from app.domain.user.exceptions import UserAlreadyExistsError, UserNotFoundError
 from app.models import User as UserModel
 
 
@@ -90,8 +90,10 @@ class UserRepository(Repository[UserModel]):
 
         """
         stmt = select(self.model).filter_by(id=user_id)
-
-        res = (await self.session.execute(stmt)).scalar_one()
+        try:
+            res = (await self.session.execute(stmt)).scalar_one()
+        except NoResultFound as e:
+            raise UserNotFoundError from e
 
         return self._get_user(res)
 
