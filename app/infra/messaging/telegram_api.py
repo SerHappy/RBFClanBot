@@ -11,13 +11,32 @@ class MessageSendingService:
     """Represents a service for sending messages to the user."""
 
     def __init__(self, bot: ExtBot, max_retries: int = 5, delay: int = 1) -> None:
-        """Initialize the message sending service."""
+        """
+        Initialize the message sending service.
+
+        Args:
+            bot (ExtBot): The bot instance.
+            max_retries (int, optional): The maximum number of retries. Defaults to 5.
+            delay (int, optional): The delay between retries. Defaults to 1.
+
+        Returns:
+            None
+        """
         self.bot = bot
         self.max_retries = max_retries
         self.delay = delay
 
     async def send_message(self, chat_id: int, text: str) -> Message:
-        """Send a message to the user."""
+        """
+        Send a message to the user.
+
+        Args:
+            chat_id (int): The chat ID of the user.
+            text (str): The text of the message.
+
+        Returns:
+            Message: The sent message.
+        """
         for attempt in range(self.max_retries):
             try:
                 message = await self.bot.send_message(chat_id=chat_id, text=text)

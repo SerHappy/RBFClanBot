@@ -15,17 +15,37 @@ from app.models import AdminProcessingApplication
 
 
 class AdminProcessingApplicationRepository(Repository[AdminProcessingApplication]):
-    """Репозиторий для работы с связями админов и обрабатываемых ими заявок."""
+    """
+    Responsible for working with the database.
+
+    Manages operations on AdminProcessingApplication objects.
+    """
 
     def __init__(self, session: AsyncSession) -> None:
-        """Инициализация репозитория."""
+        """
+        Initialize the repository.
+
+        Args:
+            session (AsyncSession): The database session.
+
+        Returns:
+            None
+        """
         super().__init__(type_model=AdminProcessingApplication, session=session)
 
     async def create(
         self,
         entity: AdminProcessingApplicationEntity,
     ) -> AdminProcessingApplicationEntity:
-        """Создание связи админа и обрабатываемой им заявки."""
+        """
+        Insert a new AdminProcessingApplicationEntity into the database.
+
+        Args:
+            entity (AdminProcessingApplicationEntity): The entity to insert.
+
+        Returns:
+            AdminProcessingApplicationEntity: The inserted entity.
+        """
         query = insert(self.model).values(
             admin_id=entity.admin_id,
             application_id=entity.application_id,
@@ -40,7 +60,15 @@ class AdminProcessingApplicationRepository(Repository[AdminProcessingApplication
         self,
         admin_id: int,
     ) -> AdminProcessingApplicationEntity | None:
-        """Получение обрабатываемой админов заявки, если она есть."""
+        """
+        Retrieve an AdminProcessingApplicationEntity by given admin_id.
+
+        Args:
+            admin_id (int): The id of the admin.
+
+        Returns:
+            AdminProcessingApplicationEntity | None: The entity if found, else None.
+        """
         logger.debug(f"Получение обрабатываемой админом {admin_id=} заявки")
         query = select(self.model).filter_by(admin_id=admin_id)
         res = (await self.session.execute(query)).scalar_one_or_none()
@@ -50,7 +78,15 @@ class AdminProcessingApplicationRepository(Repository[AdminProcessingApplication
         return self._get_entity(res)
 
     async def delete(self, entity: AdminProcessingApplicationEntity) -> None:
-        """Удаление связи админа и обрабатываемой им заявки."""
+        """
+        Delete an AdminProcessingApplicationEntity from the database.
+
+        Args:
+            entity (AdminProcessingApplicationEntity): The entity to delete.
+
+        Returns:
+            None
+        """
         query = delete(self.model).filter_by(
             admin_id=entity.admin_id,
             application_id=entity.application_id,
@@ -61,9 +97,15 @@ class AdminProcessingApplicationRepository(Repository[AdminProcessingApplication
         self,
         obj: AdminProcessingApplication,
     ) -> AdminProcessingApplicationEntity:
+        """
+        Convert an database object to an AdminProcessingApplicationEntity.
+
+        Args:
+            obj (AdminProcessingApplication): The object to convert.
+
+        Returns:
+            AdminProcessingApplicationEntity: The converted entity.
+        """
         return AdminProcessingApplicationEntity(
-            data=AdminProcessingApplicationDTO(
-                admin_id=obj.admin_id,
-                application_id=obj.application_id,
-            ),
+            data=AdminProcessingApplicationDTO.model_validate(obj),
         )

@@ -14,7 +14,18 @@ async def game_mode(
     message: Message,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> int:
-    """Обработка ответа состояния ApplicationStates.game_modes_state."""
+    """
+    Handle game mode answer.
+
+    Args:
+        user_id (int): The user id.
+        chat (Chat): The chat.
+        message (Message): The message.
+        context (ContextTypes.DEFAULT_TYPE): The context.
+
+    Returns:
+        int: The next state.
+    """
     data = QuestionResponseDTO(
         bot=context.bot,
         user_id=user_id,

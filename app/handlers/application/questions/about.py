@@ -13,7 +13,18 @@ async def about_skip(
     message: Message,  # noqa: ARG001
     context: ContextTypes.DEFAULT_TYPE,
 ) -> int:
-    """Обработка ответа состояния при вводе "Пропустить"."""
+    """
+    Handle about skip.
+
+    Args:
+        user_id (int): The user id.
+        chat (Chat): The chat.
+        message (Message): The message.
+        context (ContextTypes.DEFAULT_TYPE): The context.
+
+    Returns:
+        int: The next state.
+    """
     answer = "Пусто"
     data = QuestionResponseDTO(
         bot=context.bot,
@@ -31,7 +42,18 @@ async def about(
     message: Message,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> int:
-    """Обработка ответа состояния при вводе текста о себе."""
+    """
+    Handle about.
+
+    Args:
+        user_id (int): The user id.
+        chat (Chat): The chat.
+        message (Message): The message.
+        context (ContextTypes.DEFAULT_TYPE): The context.
+
+    Returns:
+        int: The next state.
+    """
     data = QuestionResponseDTO(
         bot=context.bot,
         user_id=user_id,

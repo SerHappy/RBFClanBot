@@ -10,14 +10,14 @@ from app.handlers import error
 
 
 def main() -> None:
-    """Энтрипоинт приложения."""
+    """Main function."""
     _loguru_setup()
     _install_uvloop()
     _start_bot()
 
 
 def _loguru_setup() -> None:
-    """Настройка логгера."""
+    """Loguru setup."""
     logger.remove()
     current_file_path = Path(__file__).resolve()
     app_directory = current_file_path.parent
@@ -41,18 +41,26 @@ def _loguru_setup() -> None:
 
 
 def _install_uvloop() -> None:
-    """Установка uvloop как event loop по умолчанию."""
+    """Install uvloop as asyncio event loop."""
     uvloop.install()
     logger.debug("Установка uvloop прошла успешно.")
 
 
 async def post_init(application: Application) -> None:
-    """Установка команд для бота."""
+    """
+    Set bot commands.
+
+    Args:
+        application (Application): The application.
+
+    Returns:
+        None
+    """
     await application.bot.set_my_commands([("start", "Подать заявку")])
 
 
 def _start_bot() -> None:
-    """Запуск бота."""
+    """Start bot."""
     application: Application = (
         ApplicationBuilder().token(settings.BOT_TOKEN).post_init(post_init).build()
     )

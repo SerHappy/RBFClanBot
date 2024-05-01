@@ -11,11 +11,27 @@ class EnsureUserExistsService:
     """Service for ensuring that the user exists."""
 
     def __init__(self, uow: UnitOfWork) -> None:
-        """Initialize the service instance."""
+        """
+        Initialize the service instance.
+
+        Args:
+            uow (UnitOfWork): The unit of work instance.
+
+        Returns:
+            None
+        """
         self._uow = uow
 
     async def execute(self, data: UserCreateDTO) -> User:
-        """Get or create the user."""
+        """
+        Ensure that the user exists.
+
+        Args:
+            data (UserCreateDTO): The data of the user.
+
+        Returns:
+            User: The retrieved or created user.
+        """
         user = await self._get_user(data.id)
         if not user:
             user_dto = UserDTO(

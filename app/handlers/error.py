@@ -12,7 +12,16 @@ from app.core.config import settings
 
 
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Log the error and send a telegram file to notify the developer asynchronously."""
+    """
+    Handle all uncaught exceptions.
+
+    Args:
+        update (object): The update.
+        context (ContextTypes.DEFAULT_TYPE): The context.
+
+    Returns:
+        None
+    """
     logger.error("Exception while handling an update:", exc_info=context.error)
 
     tb_list = traceback.format_exception(

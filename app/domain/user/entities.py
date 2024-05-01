@@ -6,7 +6,15 @@ class User:
     """Represents a user domain object."""
 
     def __init__(self, data: UserDTO) -> None:
-        """Initialize the user instance."""
+        """
+        Initialize the user instance.
+
+        Args:
+            data (UserDTO): The data of the user.
+
+        Returns:
+            None
+        """
         self.id = data.id
         self.username = data.username
         self.first_name = data.first_name
@@ -26,13 +34,6 @@ class User:
         self.is_banned = False
 
     def check_is_user_banned(self) -> None:
-        """
-        Check if the user is banned.
-
-        Raises
-        ------
-            UserIsBannedError: If the user is banned.
-
-        """
+        """Check if the user is banned."""
         if self.is_banned:
             raise UserIsBannedError

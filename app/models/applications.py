@@ -8,20 +8,7 @@ from app.models.base import Base
 
 
 class Application(Base):
-    """
-    Модель заявок от пользователей.
-
-    Название таблицы: applications
-
-    Поля:
-    - id (Integer): идентификатор. Автоинкремент, первичный ключ
-    - user_id (BigInteger): идентификатор пользователя. Внешний ключ на users.id
-    - status (ApplicationStatusEnum): статус заявки
-    - decision_date (TIMESTAMP): дата решения заявки
-    - rejection_reason (TEXT): причина отклонения заявки
-    - invite_link (String(255)): ссылка на приглашение
-    - created_at (TIMESTAMP): дата создания записи
-    """
+    """Application model for database table."""
 
     __tablename__ = "applications"
 

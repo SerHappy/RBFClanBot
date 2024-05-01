@@ -23,12 +23,28 @@ class ApplicationStartService:
     """
 
     def __init__(self, uow: UnitOfWork) -> None:
-        """Initialize the application start service."""
+        """
+        Initialize the application start service.
+
+        Args:
+            uow (UnitOfWork): The unit of work instance.
+
+        Returns:
+            None
+        """
         self._uow = uow
 
     # TODO: Refactor this into small private methods
     async def execute(self, user_id: int) -> Application:
-        """Execute the application start service."""
+        """
+        Execute the application start service.
+
+        Args:
+            user_id (int): Telegram ID of the user.
+
+        Returns:
+            Application: The application.
+        """
         async with self._uow():
             user = await self._uow.user.retrieve(user_id)
             if not user:

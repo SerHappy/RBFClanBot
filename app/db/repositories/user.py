@@ -11,24 +11,33 @@ from app.models import User as UserModel
 
 
 class UserRepository(Repository[UserModel]):
-    """Репозиторий для работы с пользователями."""
+    """
+    Responsible for working with the database.
+
+    Manages operations on User objects.
+    """
 
     def __init__(self, session: AsyncSession) -> None:
-        """Инициализация репозитория."""
+        """
+        Initialize the repository.
+
+        Args:
+            session (AsyncSession): The database session.
+
+        Returns:
+            None
+        """
         super().__init__(type_model=UserModel, session=session)
 
     async def create(self, user: UserEntity) -> UserEntity:
         """
-        Создание пользователя.
+        Create new user in the database.
 
         Args:
-        ----
-            user: Пользователь.
+            user (UserEntity): The user entity instance.
 
         Returns:
-        -------
-            Экземпляр User (созданный).
-
+            UserEntity: The created user.
         """
         logger.debug(f"Создание пользователя с id={user.id}")
         query = insert(self.model).values(
@@ -50,14 +59,10 @@ class UserRepository(Repository[UserModel]):
         Update the user data in the database based on the provided user.
 
         Args:
-        ----
-            user: The user entity instance containing updated fields that
-            need to be persisted in the database.
+            user (UserEntity): The user to update.
 
         Returns:
-        -------
-            The updated user.
-
+            UserEntity: The updated user.
         """
         query = (
             update(self.model)
@@ -78,12 +83,10 @@ class UserRepository(Repository[UserModel]):
         Retrieve the user from database based on the provided Telegram ID.
 
         Args:
-        ----
-            user_id: Telegram ID of the user.
+            user_id (int): Telegram ID of the user.
 
         Returns:
-        -------
-            The user.
+            UserEntity: The user.
 
         """
         stmt = select(self.model).filter_by(id=user_id)
@@ -93,5 +96,14 @@ class UserRepository(Repository[UserModel]):
         return self._get_user(res)
 
     def _get_user(self, obj: UserModel) -> UserEntity:
+        """
+        Convert database object to UserEntity.
+
+        Args:
+            obj (UserModel): The object to convert.
+
+        Returns:
+            UserEntity: The converted user.
+        """
         data = UserDTO.model_validate(obj)
         return UserEntity(data)

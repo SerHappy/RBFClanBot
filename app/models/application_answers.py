@@ -7,19 +7,7 @@ from app.models.base import Base
 
 
 class ApplicationAnswer(Base):
-    """
-    Модель ответов на вопросы.
-
-    Название таблицы: application_answers
-
-    Поля:
-    - id (Integer): идентификатор. Автоинкремент, первичный ключ
-    - application_id (Integer): идентификатор заявки. Внешний ключ на applications.id
-    - question_number (Integer): порядковый номер вопроса
-    - answer_text (TEXT): текст ответа
-    - created_at (TIMESTAMP): дата создания записи
-
-    """
+    """ApplicationAnswer model for database table."""
 
     __tablename__ = "application_answers"
 

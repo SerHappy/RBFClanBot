@@ -7,19 +7,7 @@ from app.models.base import Base
 
 
 class User(Base):
-    """
-    Модель пользователей.
-
-    Название таблицы: users
-
-    Поля:
-    - id (BigInteger): идентификатор. Равен telegram_id, Первичный ключ
-    - username (String(255)): имя пользователя
-    - first_name (String(64)): имя
-    - last_name (String(64)): фамилия
-    - created_at (TIMESTAMP): дата создания записи
-    - is_banned (Boolean): забанен ли пользователь. По умолчанию False
-    """
+    """User model for database table."""
 
     __tablename__ = "users"
 

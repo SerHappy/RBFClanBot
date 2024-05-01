@@ -8,17 +8,14 @@ async def unknown_handler(
     context: ContextTypes.DEFAULT_TYPE,  # noqa: ARG001
 ) -> None:
     """
-    Обработчик неизвестных команд.
+    Handle unknown command.
 
     Args:
-    ----
-        update: Объект Update.
-        context: Контекст.
+        update: The update.
+        context: The context.
 
     Returns:
-    -------
         None
-
     """
     chat = update.effective_chat
     if not chat:

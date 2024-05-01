@@ -5,7 +5,7 @@ from app.models.base import Base
 
 
 class AdminProcessingApplication(Base):
-    """Модель связи админа и обрабатываемой им заявки."""
+    """AdminProcessingApplication model for database table."""
 
     __tablename__ = "admin_processing_applications"
 

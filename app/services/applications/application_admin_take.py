@@ -14,7 +14,15 @@ class ApplicationAdminTakeService:
     """Represents an application admin take service."""
 
     def __init__(self, uow: UnitOfWork) -> None:
-        """Initialize the service instance."""
+        """
+        Initialize the service instance.
+
+        Args:
+            uow (UnitOfWork): The unit of work instance.
+
+        Returns:
+            None
+        """
         self._uow = uow
 
     async def execute(
@@ -22,7 +30,16 @@ class ApplicationAdminTakeService:
         admin_id: int,
         application_id: int,
     ) -> AdminProcessingApplication:
-        """Execute the service."""
+        """
+        Execute the service.
+
+        Args:
+            admin_id (int): Telegram ID of the admin.
+            application_id (int): Telegram ID of the application.
+
+        Returns:
+            AdminProcessingApplication: The admin processing application.
+        """
         async with self._uow():
             application = await self._uow.application.get_by_id(application_id)
             if application.status != ApplicationStatusEnum.WAITING:

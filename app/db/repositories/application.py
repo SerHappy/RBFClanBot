@@ -16,14 +16,34 @@ from app.models import Application
 
 
 class ApplicationRepository(Repository[Application]):
-    """Репозиторий для работы с заявками."""
+    """
+    Responsible for working with the database.
+
+    Manages operations on Application objects.
+    """
 
     def __init__(self, session: AsyncSession) -> None:
-        """Инициализация репозитория."""
+        """
+        Initialize the repository.
+
+        Args:
+            session (AsyncSession): The database session.
+
+        Returns:
+            None
+        """
         super().__init__(type_model=Application, session=session)
 
     async def create(self, user_id: int) -> ApplicationEntity:
-        """Создание заявки."""
+        """
+        Create new user application.
+
+        Args:
+            user_id (int): The user id.
+
+        Returns:
+            ApplicationEntity: The created application.
+        """
         application = Application(user_id=user_id)
         try:
             self.session.add(application)
@@ -35,7 +55,15 @@ class ApplicationRepository(Repository[Application]):
         return ApplicationEntity(data=application_dto)
 
     async def get_by_id(self, application_id: int) -> ApplicationEntity:
-        """Get application by id."""
+        """
+        Retrieve application by given id.
+
+        Args:
+            application_id (int): The id of the application.
+
+        Returns:
+            ApplicationEntity: The application.
+        """
         stmt = (
             select(Application)
             .options(selectinload(Application.answers))
@@ -45,7 +73,15 @@ class ApplicationRepository(Repository[Application]):
         return self._get_application_entity(res)
 
     async def retrieve_last(self, user_id: int) -> ApplicationEntity:
-        """Retrieve last user application."""
+        """
+        Retrieve last user application.
+
+        Args:
+            user_id (int): The user id.
+
+        Returns:
+            ApplicationEntity: The application.
+        """
         stmt = (
             select(Application)
             .options(selectinload(Application.answers))
@@ -62,7 +98,15 @@ class ApplicationRepository(Repository[Application]):
         return self._get_application_entity(application)
 
     async def update(self, application: ApplicationEntity) -> ApplicationEntity:
-        """Update application."""
+        """
+        Update application in the database.
+
+        Args:
+            application (ApplicationEntity): The application to update.
+
+        Returns:
+            ApplicationEntity: The updated application.
+        """
         query = (
             update(Application)
             .filter_by(id=application.id)
@@ -78,23 +122,36 @@ class ApplicationRepository(Repository[Application]):
         return application
 
     async def delete_answers(self, application_id: int) -> None:
-        """Удаление всех ответов для заявки."""
+        """
+        Delete all answers of application based on the provided application ID.
+
+        Args:
+            application_id (int): The application ID.
+
+        Returns:
+            None
+        """
         query = delete(ApplicationAnswer).filter_by(
             application_id=application_id,
         )
         await self.session.execute(query)
 
     def _get_application_entity(self, application: Application) -> ApplicationEntity:
+        """
+        Convert application model to application entity.
+
+        Args:
+            application (Application): The application model.
+
+        Returns:
+            ApplicationEntity: The application entity.
+        """
         application_dto = ApplicationDTO.model_validate(application)
         return ApplicationEntity(
             data=application_dto,
             answers={
                 a.question_number: ApplicationAnswer(
-                    data=AnswerDTO(
-                        application_id=a.application_id,
-                        answer_text=a.answer_text,
-                        question_number=a.question_number,
-                    ),
+                    data=AnswerDTO.model_validate(a),
                 )
                 for a in application.answers
             },

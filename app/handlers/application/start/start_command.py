@@ -32,9 +32,16 @@ async def start_command(  # noqa: PLR0911
     message: Message | None = None,  # noqa: ARG001
 ) -> int | None:
     """
-    Входная точка для заполнения анкеты.
+    Handle start command.
 
-    Вызывается при вызове команды /start.
+    Args:
+        user (User): The user.
+        chat (Chat): The chat.
+        context (ContextTypes.DEFAULT_TYPE): The context.
+        message (Message | None): The message.
+
+    Returns:
+        int | None: The next state or None.
     """
     chat_type = chat.type
     if chat_type != constants.ChatType.PRIVATE:
@@ -100,16 +107,13 @@ async def start_command(  # noqa: PLR0911
 
 async def _send_greeting(chat: Chat) -> None:
     """
-    Отправить приветственное сообщение в чат.
+    Send greeting message.
 
     Args:
-    ----
-        chat: Чат.
+        chat (Chat): The chat.
 
     Returns:
-    -------
-        None.
-
+        None
     """
     logger.debug(f"Отправляем приветственное сообщения в чат chat_id={chat.id}.")
     await chat.send_message(
@@ -124,16 +128,13 @@ async def _send_greeting(chat: Chat) -> None:
 
 async def _ask_for_pubg_id(chat: Chat) -> None:
     """
-    Запросить ответ на pubg_id.
+    Ask question about pubg_id.
 
     Args:
-    ----
-        chat: Чат.
+        chat (Chat): The chat.
 
     Returns:
-    -------
-        Новое состояние ApplicationStates.pubgID_state.
-
+        None
     """
     logger.debug(f"Запрашиваем ответ на pubg_id в чате chat_id={chat.id}.")
     await chat.send_message(

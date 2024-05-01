@@ -16,7 +16,18 @@ async def age(
     message: Message,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> int:
-    """Обработка ответа состояния ApplicationStates.old_state."""
+    """
+    Handle age answer.
+
+    Args:
+        user_id (int): The user id.
+        chat (Chat): The chat.
+        message (Message): The message.
+        context (ContextTypes.DEFAULT_TYPE): The context.
+
+    Returns:
+        int: The next state.
+    """
     if not question_validators.is_digit_between(start=1, end=100, value=message.text):
         logger.debug(
             f"Получен некорректный age={message.text} в чате chat_id={chat.id}.",

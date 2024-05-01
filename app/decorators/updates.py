@@ -5,6 +5,8 @@ from loguru import logger
 from telegram import Update
 from telegram.ext import ContextTypes, ConversationHandler
 
+# TODO: Change this
+
 
 def check_application_update(
     return_error_state: int | None = None,

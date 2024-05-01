@@ -27,7 +27,13 @@ class Application:
         data: ApplicationDTO,
         answers: dict[int, ApplicationAnswer] | None = None,
     ) -> None:
-        """Initialize the application instance."""
+        """
+        Initialize the application instance.
+
+        Args:
+            data (ApplicationDTO): The data of the application.
+            answers (dict[int, ApplicationAnswer], optional): Answers.
+        """
         self.id = data.id
         self.user_id = data.user_id
         self.status = data.status
@@ -38,14 +44,30 @@ class Application:
         self.admin_id = data.admin_id
 
     def add_new_answer(self, answer: ApplicationAnswer) -> None:
-        """Add a new answer to the application."""
+        """
+        Add a new answer to the application.
+
+        Args:
+            answer (ApplicationAnswer): The answer to add.
+
+        Returns:
+            None
+        """
         if answer.question_number in self.answers:
             raise ApplicationAnswerAlreadyExistError
 
         self.answers[answer.question_number] = answer
 
     def update_answer(self, answer: ApplicationAnswer) -> None:
-        """Update an existing answer in the application."""
+        """
+        Update an existing answer in the application.
+
+        Args:
+            answer (ApplicationAnswer): The answer to update.
+
+        Returns:
+            None
+        """
         if answer.question_number not in self.answers:
             raise ApplicationAnswerDoesNotExistError
 
@@ -69,7 +91,15 @@ class Application:
         self.status = ApplicationStatusEnum.WAITING
 
     def take(self, admin_id: int) -> None:
-        """Change the application status to 'PROCESSING'."""
+        """
+        Change the application status to 'PROCESSING'.
+
+        Args:
+            admin_id (int): The ID of the admin who took the application.
+
+        Returns:
+            None
+        """
         if self.status != ApplicationStatusEnum.WAITING:
             raise ChangeApplicationStatusError
 
@@ -77,7 +107,15 @@ class Application:
         self.status = ApplicationStatusEnum.PROCESSING
 
     def accept(self, invite_link: str) -> None:
-        """Change the application status to 'ACCEPTED'."""
+        """
+        Change the application status to 'ACCEPTED'.
+
+        Args:
+            invite_link (str): The invite link of the application.
+
+        Returns:
+            None
+        """
         if self.status != ApplicationStatusEnum.PROCESSING:
             raise ChangeApplicationStatusError
 
@@ -86,7 +124,15 @@ class Application:
         self.invite_link = invite_link
 
     def reject(self, rejection_reason: str) -> None:
-        """Change the application status to 'REJECTED'."""
+        """
+        Change the application status to 'REJECTED'.
+
+        Args:
+            rejection_reason (str): The reason for rejection.
+
+        Returns:
+            None
+        """
         if self.status != ApplicationStatusEnum.PROCESSING:
             raise ChangeApplicationStatusError
 

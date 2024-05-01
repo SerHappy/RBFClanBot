@@ -15,7 +15,18 @@ async def activity(
     message: Message,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> int:
-    """Обработка ответа состояния ApplicationStates.activity_state."""
+    """
+    Handle activity answer.
+
+    Args:
+        user_id (int): The user id.
+        chat (Chat): The chat.
+        message (Message): The message.
+        context (ContextTypes.DEFAULT_TYPE): The context.
+
+    Returns:
+        int: The next state.
+    """
     data = QuestionResponseDTO(
         bot=context.bot,
         user_id=user_id,

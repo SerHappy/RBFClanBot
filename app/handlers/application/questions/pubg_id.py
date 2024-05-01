@@ -16,7 +16,18 @@ async def pubg_id(
     message: Message,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> int:
-    """Обработка ответа состояния ApplicationStates.pubgID_state."""
+    """
+    Handle pubg id answer.
+
+    Args:
+        user_id (int): The user id.
+        chat (Chat): The chat.
+        message (Message): The message.
+        context (ContextTypes.DEFAULT_TYPE): The context.
+
+    Returns:
+        int: The next state.
+    """
     # TODO: Replace with pydantic validator
     if not question_validators.is_only_numbers(message.text):
         logger.debug(

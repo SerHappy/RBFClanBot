@@ -9,17 +9,37 @@ from app.models import ApplicationAnswer
 
 
 class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
-    """Репозиторий для работы с ответами на заявки."""
+    """
+    Responsible for working with the database.
+
+    Manages operations on ApplicationAnswer objects.
+    """
 
     def __init__(self, session: AsyncSession) -> None:
-        """Инициализация репозитория."""
+        """
+        Initialize the repository.
+
+        Args:
+            session (AsyncSession): The database session.
+
+        Returns:
+            None
+        """
         super().__init__(type_model=ApplicationAnswer, session=session)
 
     async def add_answer(
         self,
         answer: ApplicationAnswerEntity,
     ) -> ApplicationAnswerEntity:
-        """Создание ответа на заявку."""
+        """
+        Insert new answer into database and return it.
+
+        Args:
+            answer (ApplicationAnswerEntity): The answer to insert.
+
+        Returns:
+            ApplicationAnswerEntity: The inserted answer.
+        """
         query = insert(self.model).values(
             application_id=answer.application_id,
             question_number=answer.question_number,
@@ -32,7 +52,15 @@ class ApplicationAnswerRepository(Repository[ApplicationAnswer]):
         self,
         answer: ApplicationAnswerEntity,
     ) -> ApplicationAnswerEntity:
-        """Обновление ответа на вопрос."""
+        """
+        Update an existing answer in the database.
+
+        Args:
+            answer (ApplicationAnswerEntity): The answer to update.
+
+        Returns:
+            ApplicationAnswerEntity: The updated answer.
+        """
         statement = (
             update(ApplicationAnswer)
             .where(ApplicationAnswer.application_id == answer.application_id)

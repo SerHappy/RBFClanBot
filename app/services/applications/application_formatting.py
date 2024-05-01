@@ -8,11 +8,27 @@ class ApplicationFormattingService:
     """Responsible for application formatting."""
 
     def __init__(self, uow: UnitOfWork) -> None:
-        """Initialize the service instance."""
+        """
+        Initialize the service instance.
+
+        Args:
+            uow (UnitOfWork): The unit of work instance.
+
+        Returns:
+            None
+        """
         self._uow = uow
 
     async def execute(self, application_id: int) -> str:
-        """Execute the service."""
+        """
+        Execute the service instance.
+
+        Args:
+            application_id (int): Telegram ID of the user.
+
+        Returns:
+            str: Formatted application.
+        """
         async with self._uow():
             application = await self._uow.application.get_by_id(application_id)
             return await self._format_application(application)
@@ -21,7 +37,7 @@ class ApplicationFormattingService:
         self,
         application: Application,
     ) -> str:
-        """Возвращает текстовое представление заявки для админов."""
+        """Return formatted application."""
         logger.debug(f"Форматирование заявки для application_id={application.id}")
         status_name_escaped = self._escape_markdown(application.status)
         answers_escaped = [
@@ -51,16 +67,13 @@ class ApplicationFormattingService:
 
     def _escape_markdown(self, text: str) -> str:
         """
-        Экранирует специальные символы для MarkdownV2.
+        Escape special characters in text for MarkdownV2.
 
         Args:
-        ----
-            text: Текст для экранирования.
+            text (str): The text to escape.
 
-        Return:
-        ------
-            Текст с экранированными специальными символами.
-
+        Returns:
+            str: The escaped text.
         """
         logger.debug(f"Экранирование символов в тексте text={text} для MarkdownV2")
         escape_chars = "_*[]()~`>#+-=|{}.!"

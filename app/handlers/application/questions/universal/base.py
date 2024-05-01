@@ -12,7 +12,15 @@ from app.services.applications.dto import (
 
 # TODO: Refactor this and DTO for more simplification
 async def handle_question(data: QuestionResponseDTO) -> int:
-    """Universal question handler."""
+    """
+    Handle question answer.
+
+    Args:
+        data (QuestionResponseDTO): Answer data.
+
+    Returns:
+        int: The next state.
+    """
     uow = UnitOfWork()
     application_response_service = ApplicationResponseService(uow)
     response_data = ApplicationResponseInputDTO(

@@ -5,11 +5,27 @@ class ApplicationOverviewService:
     """Responsible for application overview."""
 
     def __init__(self, uow: UnitOfWork) -> None:
-        """Initialize the service instance."""
+        """
+        Initialize the service instance.
+
+        Args:
+            uow (UnitOfWork): The unit of work instance.
+
+        Returns:
+            None
+        """
         self._uow = uow
 
     async def execute(self, user_id: int) -> str:
-        """Execute the application overview service."""
+        """
+        Execute the application overview service.
+
+        Args:
+            user_id (int): Telegram ID of the user.
+
+        Returns:
+            str: The application overview.
+        """
         async with self._uow():
             user_application = await self._uow.application.retrieve_last(user_id)
         answers = user_application.answers

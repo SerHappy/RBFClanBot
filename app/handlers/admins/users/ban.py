@@ -13,7 +13,16 @@ async def ban_user(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,  # noqa: ARG001
 ) -> int | None:
-    """Обработчик команды бана пользователя."""
+    """
+    Handle ban user.
+
+    Args:
+        update (Update): The update.
+        context (ContextTypes.DEFAULT_TYPE): The context.
+
+    Returns:
+        int | None: The next state or None.
+    """
     chat = update.effective_chat
     if not update.message or not update.message.text or not chat:
         logger.error(

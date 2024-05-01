@@ -11,7 +11,16 @@ async def new_user_joined_handler(
     update: Update,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
-    """Обработчик нового пользователя."""
+    """
+    Handle new user joined event.
+
+    Args:
+        update (Update): The update.
+        context (ContextTypes.DEFAULT_TYPE): The context.
+
+    Returns:
+        None
+    """
     message = update.message
     if not message:
         return
@@ -44,7 +53,16 @@ async def new_user_joined_handler(
 
 
 async def _revoke_invite_link(bot: ExtBot, invite_link: str) -> None:
-    """Отменяет ссылку на приглашение."""
+    """
+    Revoke invite link.
+
+    Args:
+        bot (ExtBot): The bot.
+        invite_link (str): The invite link.
+
+    Returns:
+        None
+    """
     logger.debug("In revoke invite link handler.")
     chat_id = settings.CLAN_CHAT_ID
     await bot.revoke_chat_invite_link(chat_id, invite_link)

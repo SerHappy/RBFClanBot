@@ -25,7 +25,18 @@ async def take_application_handler(
     chat: Chat,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> int | None:
-    """Взятие заявки в обработку."""
+    """
+    Handle application take.
+
+    Args:
+        callback (CallbackQuery): The callback query.
+        chat (Chat): The chat.
+        context (ContextTypes.DEFAULT_TYPE): The context.
+
+    Returns:
+        int | None: The next state or None.
+
+    """
     callback_data = callback.data
     admin_id = callback.from_user.id
     application_message = callback.message

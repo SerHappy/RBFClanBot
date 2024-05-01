@@ -43,6 +43,9 @@ ignore = [
     "D212",
 ]
 
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

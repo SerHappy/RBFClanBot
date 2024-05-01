@@ -24,7 +24,17 @@ async def accept_application(
     chat: Chat,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> None:
-    """Обработчик коллбека принятия заявки."""
+    """
+    Handle application accept.
+
+    Args:
+        callback (CallbackQuery): The callback query.
+        chat (Chat): The chat.
+        context (ContextTypes.DEFAULT_TYPE): The context.
+
+    Returns:
+        None
+    """
     if not callback.data:
         logger.error(
             "Получен некорректный callback при попытке вызова accept_application.",
@@ -96,16 +106,12 @@ async def accept_application(
 
 async def _generate_invite_link(bot: ExtBot) -> str:
     """
-    Генерирует и возвращает ссылку на приглашение.
+    Generate invite link for clan chat.
 
-    Args:
-    ----
-        bot: Объект Bot.
+    Args: bot (ExtBot): The bot instance.
 
     Returns:
-    -------
-        Ссылка на приглашение.
-
+        str: The invite link.
     """
     logger.debug("In generate invite link handler.")
     chat_id = settings.CLAN_CHAT_ID

@@ -14,7 +14,15 @@ class ApplicationAdminAcceptService:
     """Represents an application accept service."""
 
     def __init__(self, uow: UnitOfWork) -> None:
-        """Initialize the service instance."""
+        """
+        Initialize the service instance.
+
+        Args:
+            uow (UnitOfWork): The unit of work instance.
+
+        Returns:
+            None
+        """
         self._uow = uow
 
     async def execute(
@@ -23,7 +31,17 @@ class ApplicationAdminAcceptService:
         application_id: int,
         invite_link: str,
     ) -> Application:
-        """Accept an application."""
+        """
+        Accept an application.
+
+        Args:
+            admin_id (int): Telegram ID of the admin.
+            application_id (int): Telegram ID of the application.
+            invite_link (str): The invite link.
+
+        Returns:
+            Application: The accepted application.
+        """
         async with self._uow():
             admin_application = (
                 await self._uow.admin_processing_application.get_by_admin_id(admin_id)

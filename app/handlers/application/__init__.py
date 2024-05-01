@@ -6,16 +6,23 @@ from telegram.ext import (
     filters,
 )
 
+from app.handlers.application.finish import user_decision
 from app.handlers.application.questions import about, activity, age, game_mode, pubg_id
+from app.handlers.application.start import start_command
 from app.handlers.config import ApplicationStates
 from app.handlers.empty import unknown_handler
 
-from .finish import user_decision
-from .start import start_command
-
 
 def register_application_handlers(application: Application) -> None:
-    """Добавление обработчика FSM состояния заполнения анкеты."""
+    """
+    Register application handlers.
+
+    Args:
+        application (Application): The application.
+
+    Returns:
+        None
+    """
     conv_hander = ConversationHandler(
         entry_points=[CommandHandler("start", start_command.start_command)],
         states={

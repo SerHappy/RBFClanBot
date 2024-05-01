@@ -18,16 +18,10 @@ from app.db.repositories.user import UserRepository
 
 def _create_db_engine() -> AsyncEngine:
     """
-    Создание подключения к базе данных.
-
-    Args:
-    ----
-        None
+    Create an asynchronous database engine.
 
     Returns:
-    -------
-        AsyncEngine: Подключение к базе данных.
-
+        AsyncEngine: An asynchronous database engine.
     """
     return create_async_engine(
         str(settings.SQLALCHEMY_DATABASE_URI),
@@ -39,14 +33,19 @@ session_factory: async_sessionmaker = async_sessionmaker(_create_db_engine())
 
 
 class UnitOfWork:
-    """Provides a unit of work pattern for managing transactions and repositories."""
+    """Provide a unit of work pattern for the database."""
 
     def __init__(self) -> None:
         """Initialize the unit of work instance."""
         self._session_factory = session_factory
 
     def __call__(self) -> "UnitOfWork":
-        """Call the unit of work."""
+        """
+        Call the unit of work.
+
+        Returns:
+            UnitOfWork: The unit of work instance.
+        """
         return self
 
     async def __aenter__(self) -> "UnitOfWork":
@@ -54,6 +53,9 @@ class UnitOfWork:
         Enter the unit of work.
 
         Initialize the session and repositories.
+
+        Returns:
+            UnitOfWork: The unit of work instance.
         """
         self._session: AsyncSession = self._session_factory()
 
@@ -72,7 +74,17 @@ class UnitOfWork:
         exc_val: BaseException | None,
         exc_tb: TracebackType | None,
     ) -> None:
-        """Exit the unit of work."""
+        """
+        Exit the unit of work.
+
+        Args:
+            exc_type: Exception type.
+            exc_val: Exception value.
+            exc_tb: Exception traceback.
+
+        Returns:
+            None
+        """
         await self.rollback()
         await self._session.close()
 

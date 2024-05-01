@@ -22,7 +22,18 @@ async def user_decision(
     message: Message,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> int:
-    """Respond to user decision."""
+    """
+    Handle user decision.
+
+    Args:
+        user_id (int): The user id.
+        chat (Chat): The chat.
+        message (Message): The message.
+        context (ContextTypes.DEFAULT_TYPE): The context.
+
+    Returns:
+        int: The next state.
+    """
     logger.info(f"Обработка варианта ответа пользователя для chat_id={chat.id}")
     return await _handle_answer_change_request(user_id, message.text, context.bot)
 

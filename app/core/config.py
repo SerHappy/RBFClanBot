@@ -4,7 +4,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    """Base settings for the application."""
+    """
+    Base configuration settings for the application.
+
+    Get settings from `.env` file or from environment variables.
+    """
 
     model_config = SettingsConfigDict(
         env_file=".env",

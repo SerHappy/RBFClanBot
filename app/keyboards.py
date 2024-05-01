@@ -11,17 +11,14 @@ from app.handlers.config import Callbacks
 
 def ADMIN_DECISION_KEYBOARD(application_id: int) -> InlineKeyboardMarkup:  # noqa: N802
     """
-    Создание клавиатуры для администраторов.
+    Create an admin keyboard with "Accept" and "Decline" buttons.
 
     Args:
-    ----
-        application_id (int): Идентификатор заявки.
+        application_id (int): Application ID.
 
     Returns:
-    -------
-        InlineKeyboardMarkup: Клавиатура с кнопками "Принять" и "Отклонить",
-        в callback_data передается application_id.
-
+        InlineKeyboardMarkup: Keyboard with "Accept" and "Decline" buttons.
+        Callback data contains application_id.
     """
     return InlineKeyboardMarkup(
         [
@@ -45,16 +42,14 @@ def ADMIN_DECISION_KEYBOARD(application_id: int) -> InlineKeyboardMarkup:  # noq
 
 def ADMIN_HANDLE_APPLICATION_KEYBOARD(application_id: int) -> InlineKeyboardMarkup:  # noqa: N802
     """
-    Создание клавиатуры для взятия заявки в обработку.
+    Create a keyboard with "Take in processing" button.
 
     Args:
-    ----
-        application_id (int): Идентификатор заявки.
+        application_id (int): Application ID.
 
     Returns:
-    -------
-        InlineKeyboardMarkup: Клавиатура с кнопкой "Взять в обработку",
-        в callback_data передается application_id.
+        InlineKeyboardMarkup: Keyboard with "Take in processing" button.
+        Callback data contains application_id.
 
     """
     return InlineKeyboardMarkup(

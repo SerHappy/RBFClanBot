@@ -28,7 +28,17 @@ async def reject_application_start(
     chat: Chat,
     context: CallbackContext,
 ) -> int:
-    """Обработчик коллбека отклонения заявки."""
+    """
+    Handle start of reject application.
+
+    Args:
+        callback (CallbackQuery): The callback query.
+        chat (Chat): The chat.
+        context (CallbackContext): The context.
+
+    Returns:
+        int: The next state.
+    """
     if not callback.data:
         logger.error(
             "Получен некорректный callback при попытке вызова accept_application.",
@@ -55,7 +65,17 @@ async def reject_reason_hander(
     chat: Chat,
     context: ContextTypes.DEFAULT_TYPE,
 ) -> int:
-    """Обработчик причины отказа."""
+    """
+    Handle reject reason.
+
+    Args:
+        message (Message): The message.
+        chat (Chat): The chat.
+        context (ContextTypes.DEFAULT_TYPE): The context.
+
+    Returns:
+        int: The next state.
+    """
     if not message.text:
         logger.error("Получена некорректная причина отказа.")
         return ConversationHandler.END
@@ -144,7 +164,17 @@ async def reject_back_button_handler(
     chat: Chat,  # noqa: ARG001
     context: CallbackContext,
 ) -> int:
-    """Обработчик кнопки Назад в чате админов."""
+    """
+    Handle reject back button.
+
+    Args:
+        callback (CallbackQuery): The callback.
+        chat (Chat): The chat.
+        context (CallbackContext): The context.
+
+    Returns:
+        int: The next state.
+    """
     await callback.answer()
     logger.debug("In decline back handler.")
     logger.info("Возврат к выбору действий для Заявки.")
