@@ -6,7 +6,13 @@ from app.domain.user.exceptions import UserIsNotBannedError
 
 @pytest.mark.parametrize(
     "user",
-    [pytest.param({"is_banned": True}, marks=pytest.mark.usefixtures("user"))],
+    [
+        pytest.param(
+            {"is_banned": True},
+            marks=pytest.mark.usefixtures("user"),
+            id="banned",
+        ),
+    ],
     indirect=True,
 )
 def test_ok(user: User) -> None:

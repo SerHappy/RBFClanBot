@@ -14,7 +14,11 @@ def test_ok(application: Application, answer: ApplicationAnswer) -> None:
 @pytest.mark.parametrize(
     "application",
     [
-        pytest.param({"status": status}, marks=pytest.mark.usefixtures("application"))
+        pytest.param(
+            {"status": status},
+            marks=pytest.mark.usefixtures("application"),
+            id=status.name,
+        )
         for status in ApplicationStatusEnum
         if status != ApplicationStatusEnum.IN_PROGRESS
     ],
