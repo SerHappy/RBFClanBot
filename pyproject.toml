@@ -20,6 +20,7 @@ pydantic = "^2.7.1"
 
 
 [tool.poetry.group.dev.dependencies]
+pytest = "^8.2.0"
 ruff = "^0.4.1"
 pyright = "^1.1.360"
 
@@ -27,6 +28,7 @@ pyright = "^1.1.360"
 exclude = [".venv", "alembic"]
 
 [tool.ruff.lint]
+exclude = ["tests/*.py"]
 select = ["ALL"]
 ignore = [
     "D100",
