@@ -84,8 +84,8 @@ def upgrade() -> None:
     op.alter_column('users', 'id',
                existing_type=sa.BIGINT(),
                type_=sa.BIGINT(),
-               existing_nullable=False,
-               autoincrement=True)
+               existing_nullable=False,)
+
     op.alter_column('users', 'username',
                existing_type=sa.VARCHAR(length=255),
                nullable=True)
@@ -122,8 +122,7 @@ def downgrade() -> None:
     op.alter_column('users', 'id',
                existing_type=sa.Integer(),
                type_=sa.BIGINT(),
-               existing_nullable=False,
-               autoincrement=True)
+               existing_nullable=False,)
     op.add_column('applications', sa.Column('status_id', sa.INTEGER(), autoincrement=False, nullable=True))
     op.create_foreign_key('applications_status_id_fkey', 'applications', 'application_statuses', ['status_id'], ['id'], ondelete='CASCADE')
     op.alter_column('applications', 'created_at',
