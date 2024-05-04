@@ -6,7 +6,7 @@ from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
-
+from sqlalchemy.ext.asyncio import AsyncConnection
 from app.models.base import Base
 
 # this is the Alembic Config object, which provides
@@ -91,7 +91,12 @@ async def run_async_migrations() -> None:
 def run_migrations_online() -> None:
     """Run migrations in 'online' mode."""
 
-    asyncio.run(run_async_migrations())
+    connectable = config.attributes.get("connection", None)
+
+    if isinstance(connectable, AsyncConnection) or connectable is None:
+        asyncio.run(run_async_migrations())
+    else:
+        do_run_migrations(connectable)
 
 
 if context.is_offline_mode():
