@@ -1,18 +1,18 @@
-from app.services.users.user_create import EnsureUserExistsService
-from app.services.users.dto import UserCreateDTO
-from tests.environment.unit_of_work import TestUnitOfWork
 import pytest
-from _pytest.fixtures import SubRequest
+
 from app.domain.user.entities import User
+from app.services.users.dto import UserCreateDTO
+from app.services.users.user_create import EnsureUserExistsService
+from tests.environment.unit_of_work import TestUnitOfWork
 
 
-@pytest.fixture
+@pytest.fixture()
 def service(uow: TestUnitOfWork) -> EnsureUserExistsService:
     return EnsureUserExistsService(uow)
 
 
-@pytest.fixture
-def dto(request: SubRequest) -> UserCreateDTO:
+@pytest.fixture()
+def dto() -> UserCreateDTO:
     return UserCreateDTO(
         id=1,
         first_name="John",
@@ -35,7 +35,7 @@ async def test_ok(
     assert result.first_name == user.first_name
     assert result.last_name == user.last_name
     assert result.username == user.username
-    assert result.is_banned == user.is_banned == False
+    assert result.is_banned == user.is_banned is False
 
 
 async def test_already_created_ok(
@@ -52,4 +52,4 @@ async def test_already_created_ok(
     assert result.first_name == user.first_name
     assert result.last_name == user.last_name
     assert result.username == user.username
-    assert result.is_banned == user.is_banned == False
+    assert result.is_banned == user.is_banned is False

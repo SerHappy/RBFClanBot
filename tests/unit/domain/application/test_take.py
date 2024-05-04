@@ -1,4 +1,5 @@
 import pytest
+
 from app.domain.application.entities import Application
 from app.domain.application.exceptions import ChangeApplicationStatusError
 from app.domain.application.value_objects import ApplicationStatusEnum

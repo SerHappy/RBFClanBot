@@ -1,12 +1,13 @@
 import pytest
+
 from app.domain.application.entities import Application
 from app.domain.application.exceptions import (
     ApplicationDoesNotCompeteError,
     ChangeApplicationStatusError,
 )
 from app.domain.application.value_objects import ApplicationStatusEnum
-from app.domain.application_answers.entities import ApplicationAnswer
 from app.domain.application_answers.dto import AnswerDTO
+from app.domain.application_answers.entities import ApplicationAnswer
 
 
 def test_ok(application: Application) -> None:
@@ -16,7 +17,7 @@ def test_ok(application: Application) -> None:
                 application_id=application.id,
                 question_number=question_number,
                 answer_text="answer",
-            )
+            ),
         )
         application.add_new_answer(answer)
     application.complete()
@@ -42,7 +43,7 @@ def test_invalid_status_fail(application: Application) -> None:
                 application_id=application.id,
                 question_number=question_number,
                 answer_text="answer",
-            )
+            ),
         )
         application.add_new_answer(answer)
     with pytest.raises(ChangeApplicationStatusError):

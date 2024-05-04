@@ -1,9 +1,7 @@
-import pytest
 
 
 from app.domain.user.dto import UserDTO
 from app.domain.user.entities import User
-from app.domain.user.exceptions import UserIsBannedError, UserIsNotBannedError
 
 
 def test_create_without_specifying_is_banned_ok() -> None:

@@ -1,9 +1,9 @@
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncEngine
 from pathlib import Path
-from alembic.config import Config
+
 from alembic import command
-from sqlalchemy import URL, Connection, NullPool, text
-import os
+from alembic.config import Config
+from sqlalchemy import URL, Connection, text
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from app.core.config import settings
 
@@ -38,7 +38,8 @@ async def create_database(url: URL) -> None:
     )
     async with engine.connect() as conn:
         result = await conn.execute(
-            text(f"SELECT 1 FROM pg_database WHERE datname='{database_name}'")
+            text("SELECT 1 FROM pg_database WHERE datname=:database_name"),
+            {"database_name": database_name},
         )
         database_exists = result.scalar() == 1
 
@@ -48,8 +49,8 @@ async def create_database(url: URL) -> None:
     async with engine.connect() as conn:
         await conn.execute(
             text(
-                f'CREATE DATABASE "{database_name}" ENCODING "utf8" TEMPLATE template1'
-            )
+                f'CREATE DATABASE "{database_name}" ENCODING "utf8" TEMPLATE template1',
+            ),
         )
     await engine.dispose()
 
@@ -60,15 +61,16 @@ async def drop_database(url: URL) -> None:
         isolation_level="AUTOCOMMIT",
     )
     async with engine.connect() as conn:
-        disc_users = """
-        SELECT pg_terminate_backend(pg_stat_activity.%(pid_column)s)
-        FROM pg_stat_activity
-        WHERE pg_stat_activity.datname = '%(database)s'
-          AND %(pid_column)s <> pg_backend_pid();
-        """ % {
-            "pid_column": "pid",
-            "database": url.database,
-        }
-        await conn.execute(text(disc_users))
+        query = """
+                SELECT pg_terminate_backend(pg_stat_activity.pid)
+                FROM pg_stat_activity
+                WHERE pg_stat_activity.datname = :database
+                AND pid <> pg_backend_pid();
+                """
+
+        await conn.execute(
+            text(query),
+            {"database": url.database},
+        )
 
         await conn.execute(text(f'DROP DATABASE "{url.database}"'))

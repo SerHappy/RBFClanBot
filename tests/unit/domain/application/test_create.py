@@ -1,5 +1,5 @@
-from app.domain.application.entities import Application
 from app.domain.application.dto import ApplicationDTO
+from app.domain.application.entities import Application
 from app.domain.application.value_objects import ApplicationStatusEnum
 
 
@@ -9,7 +9,7 @@ def test_create_ok() -> None:
             id=1,
             user_id=1,
             status=ApplicationStatusEnum.IN_PROGRESS,
-        )
+        ),
     )
 
     assert application.id == 1

@@ -1,11 +1,12 @@
 import pytest
-from app.domain.user.exceptions import UserNotFoundError, UserIsBannedError
-from tests.environment.unit_of_work import TestUnitOfWork
-from app.services.users.user_ban import UserBanService
+
 from app.domain.user.entities import User
+from app.domain.user.exceptions import UserIsBannedError, UserNotFoundError
+from app.services.users.user_ban import UserBanService
+from tests.environment.unit_of_work import TestUnitOfWork
 
 
-@pytest.fixture
+@pytest.fixture()
 def service(uow: TestUnitOfWork) -> UserBanService:
     return UserBanService(uow)
 
@@ -16,7 +17,7 @@ async def test_ok(service: UserBanService, uow: TestUnitOfWork, user: User) -> N
         await uow.commit()
     banned_user = await service.execute(created_user.id)
 
-    assert banned_user.is_banned == True
+    assert banned_user.is_banned is True
     assert user.id == banned_user.id
     assert user.first_name == banned_user.first_name
     assert user.last_name == banned_user.last_name

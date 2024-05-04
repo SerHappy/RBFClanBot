@@ -1,4 +1,5 @@
 import pytest
+
 from app.domain.application.entities import Application
 from app.domain.application.exceptions import ApplicationAnswerAlreadyExistError
 from app.domain.application_answers.entities import ApplicationAnswer
