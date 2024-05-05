@@ -13,6 +13,7 @@ from app.handlers.admins.applications.reject import (
     reject_application_start,
     reject_back_button_handler,
     reject_reason_hander,
+    reject_without_reason_hander,
 )
 from app.handlers.admins.applications.take import take_application_handler
 from app.handlers.admins.shutdown import shutdown_handler
@@ -48,6 +49,10 @@ def register_admin_handlers(application: Application) -> None:
                 CallbackQueryHandler(
                     reject_back_button_handler,
                     pattern=f"^{Callbacks.APPLICATION_DECLINE_BACK.value}",
+                ),
+                CallbackQueryHandler(
+                    reject_without_reason_hander,
+                    pattern=f"^{Callbacks.APPLICATION_DECLINE_WITHOUT_REASON.value.split(':')[0]}",
                 ),
                 MessageHandler(
                     filters.TEXT,

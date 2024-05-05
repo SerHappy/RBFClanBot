@@ -66,16 +66,36 @@ def ADMIN_HANDLE_APPLICATION_KEYBOARD(application_id: int) -> InlineKeyboardMark
     )
 
 
-ADMIN_DECLINE_BACK_KEYBOARD = InlineKeyboardMarkup(
-    [
+def ADMIN_DECLINE_KEYBOARD(application_id: int) -> InlineKeyboardMarkup:  # noqa: N802
+    """
+    Create a keyboard with "Decline" buttons.
+
+    Args:
+        application_id (int): Application ID.
+
+    Returns:
+        InlineKeyboardMarkup: Keyboard with "Decline" buttons.
+        Callback data contains application_id.
+    """
+    return InlineKeyboardMarkup(
         [
-            InlineKeyboardButton(
-                "Назад",
-                callback_data=Callbacks.APPLICATION_DECLINE_BACK.value,
-            ),
+            [
+                InlineKeyboardButton(
+                    "Назад",
+                    callback_data=Callbacks.APPLICATION_DECLINE_BACK.value,
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    "Отказать без причины",
+                    callback_data=Callbacks.APPLICATION_DECLINE_WITHOUT_REASON.value.format(
+                        application_id=application_id,
+                    ),
+                ),
+            ],
         ],
-    ],
-)
+    )
+
 
 USER_SKIP_KEYBOARD = ReplyKeyboardMarkup(
     [

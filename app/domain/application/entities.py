@@ -123,7 +123,7 @@ class Application:
         self.admin_id = None
         self.invite_link = invite_link
 
-    def reject(self, rejection_reason: str) -> None:
+    def reject(self, rejection_reason: str | None = None) -> None:
         """
         Change the application status to 'REJECTED'.
 

@@ -5,12 +5,21 @@ from app.domain.application.exceptions import ChangeApplicationStatusError
 from app.domain.application.value_objects import ApplicationStatusEnum
 
 
-def test_ok(application: Application) -> None:
+def test_with_reason_ok(application: Application) -> None:
     application.status = ApplicationStatusEnum.PROCESSING
     application.admin_id = 1
     application.reject("reason")
     assert application.status == ApplicationStatusEnum.REJECTED
     assert application.rejection_reason == "reason"
+    assert application.admin_id is None
+
+
+def test_without_reason_ok(application: Application) -> None:
+    application.status = ApplicationStatusEnum.PROCESSING
+    application.admin_id = 1
+    application.reject()
+    assert application.status == ApplicationStatusEnum.REJECTED
+    assert application.rejection_reason is None
     assert application.admin_id is None
 
 

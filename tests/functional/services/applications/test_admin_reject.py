@@ -42,7 +42,7 @@ async def admin_application(
     return entity
 
 
-async def test_ok(
+async def test_with_reason_ok(
     service: ApplicationAdminRejectService,
     admin_application: AdminProcessingApplication,
 ) -> None:
@@ -53,6 +53,19 @@ async def test_ok(
     )
     assert accepted_application.status == ApplicationStatusEnum.REJECTED
     assert accepted_application.rejection_reason == "reason"
+    assert accepted_application.admin_id is None
+
+
+async def test_without_reason_ok(
+    service: ApplicationAdminRejectService,
+    admin_application: AdminProcessingApplication,
+) -> None:
+    accepted_application = await service.execute(
+        admin_application.admin_id,
+        admin_application.application_id,
+    )
+    assert accepted_application.status == ApplicationStatusEnum.REJECTED
+    assert accepted_application.rejection_reason is None
     assert accepted_application.admin_id is None
 
 

@@ -28,7 +28,7 @@ class ApplicationAdminRejectService:
         self,
         admin_id: int,
         application_id: int,
-        rejection_reason: str,
+        rejection_reason: str | None = None,
     ) -> Application:
         """
         Reject an application.
@@ -36,7 +36,7 @@ class ApplicationAdminRejectService:
         Args:
             admin_id (int): Telegram ID of the admin.
             application_id (int): Telegram ID of the application.
-            rejection_reason (str): The reason for rejection.
+            rejection_reason (str, optional): The reason for rejection.
 
         Raises:
             ApplicationAlreadyProcessedError: If the application is already processed.
