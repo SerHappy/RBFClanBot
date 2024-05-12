@@ -45,7 +45,7 @@ class ApplicationFormattingService:
         status_name_escaped = self._escape_markdown(application.status)
         answers_escaped = [
             self._escape_markdown(answer.answer_text)
-            for key, answer in application.answers.items()
+            for key, answer in sorted(application.answers.items(), key=lambda x: x[0])
         ]
 
         user_display = f"[ID{application.user_id}](tg://user?id={application.user_id})"
